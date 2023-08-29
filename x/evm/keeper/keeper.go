@@ -58,6 +58,8 @@ type Keeper struct {
 	Signer       ethtypes.Signer
 	TransferFunc func(db vm.StateDB, sender, recipient common.Address, amount *big.Int)
 	AccStoreKey  sdk.StoreKey
+
+	FeeCollectorName string
 }
 
 // NewKeeper generates new evm module keeper
