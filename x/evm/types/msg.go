@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common/math"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
@@ -184,6 +186,9 @@ func (msg *MsgEthereumTx) GetMsgs() []sdk.Msg {
 //
 // NOTE: This method panics if 'Sign' hasn't been called first.
 func (msg *MsgEthereumTx) GetSigners() []sdk.AccAddress {
+	if len(msg.From) > 1 {
+		return msg.getSingersForSm2()
+	}
 	data, err := UnpackTxData(msg.Data)
 	if err != nil {
 		panic(err)
@@ -273,6 +278,20 @@ func (msg *MsgEthereumTx) GetFrom() sdk.AccAddress {
 	return common.HexToAddress(msg.From).Bytes()
 }
 
+// GetFeePayer loads the ethereum sender address from the sigcache and returns an
+// sdk.AccAddress from its bytes
+func (msg *MsgEthereumTx) GetFeePayer() sdk.AccAddress {
+	if msg.FeePayer == "" {
+		return nil
+	}
+
+	return common.HexToAddress(msg.FeePayer).Bytes()
+}
+
+func (msg *MsgEthereumTx) SetFeePayer(feePayer string) {
+	msg.FeePayer = feePayer
+}
+
 // AsTransaction creates an Ethereum Transaction type from the msg fields
 func (msg MsgEthereumTx) AsTransaction() *ethtypes.Transaction {
 	txData, err := UnpackTxData(msg.Data)
@@ -285,11 +304,17 @@ func (msg MsgEthereumTx) AsTransaction() *ethtypes.Transaction {
 
 // AsMessage creates an Ethereum core.Message from the msg fields
 func (msg MsgEthereumTx) AsMessage(signer ethtypes.Signer, baseFee *big.Int) (core.Message, error) {
+	if len(msg.From) > 0 {
+		return msg.AsMessageSm2(signer, baseFee)
+	}
 	return msg.AsTransaction().AsMessage(signer, baseFee)
 }
 
 // GetSender extracts the sender address from the signature values using the latest signer for the given chainID.
 func (msg *MsgEthereumTx) GetSender(chainID *big.Int) (common.Address, error) {
+	if len(msg.From) > 1 {
+		return msg.getSingerForSm2()
+	}
 	signer := ethtypes.LatestSignerForChainID(chainID)
 	from, err := signer.Sender(msg.AsTransaction())
 	if err != nil {
@@ -345,4 +370,49 @@ func (msg *MsgEthereumTx) BuildTx(b client.TxBuilder, evmDenom string) (signing.
 	builder.SetGasLimit(msg.GetGas())
 	tx := builder.GetTx()
 	return tx, nil
+}
+
+func (msg *MsgEthereumTx) getSingersForSm2() []sdk.AccAddress {
+	var addr common.Address
+	if common.IsHexAddress(msg.From) {
+		addr = common.HexToAddress(msg.From)
+	}
+
+	return []sdk.AccAddress{addr.Bytes()}
+}
+
+func (msg *MsgEthereumTx) getSingerForSm2() (common.Address, error) {
+	var addr common.Address
+	if common.IsHexAddress(msg.From) {
+		addr = common.HexToAddress(msg.From)
+	}
+
+	return addr, nil
+}
+
+func (msg *MsgEthereumTx) AsMessageSm2(signer ethtypes.Signer, baseFee *big.Int) (core.Message, error) {
+
+	tx := msg.AsTransaction()
+	gasFeeCap := new(big.Int).Set(tx.GasFeeCap())
+	gasTipCap := new(big.Int).Set(tx.GasTipCap())
+	gasPrice := new(big.Int).Set(tx.GasPrice())
+	if baseFee != nil {
+		gasPrice = math.BigMin(gasPrice.Add(gasTipCap, baseFee), gasFeeCap)
+	}
+
+	ethMsg := ethtypes.NewMessage(
+		common.HexToAddress(msg.From),
+		tx.To(),
+		tx.Nonce(),
+		tx.Value(),
+		tx.Gas(),
+		gasPrice,
+		gasFeeCap,
+		gasTipCap,
+		tx.Data(),
+		tx.AccessList(),
+		false,
+	)
+
+	return ethMsg, nil
 }

@@ -265,6 +265,8 @@ func (b *Backend) EthBlockFromTendermint(
 		ConsAddress: sdk.ConsAddress(block.Header.ProposerAddress).String(),
 	}
 
+	var validatorAccAddr sdk.AccAddress
+
 	ctx := types.ContextWithHeight(block.Height)
 	res, err := b.queryClient.ValidatorAccount(ctx, req)
 	if err != nil {
@@ -274,15 +276,17 @@ func (b *Backend) EthBlockFromTendermint(
 			"cons-address", req.ConsAddress,
 			"error", err.Error(),
 		)
+		// use zero address as the validator operator address
+		validatorAccAddr = sdk.AccAddress(common.Address{}.Bytes())
 		return nil, err
+	} else {
+		validatorAccAddr, err = sdk.AccAddressFromBech32(res.AccountAddress)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	addr, err := sdk.AccAddressFromBech32(res.AccountAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	validatorAddr := common.BytesToAddress(addr)
+	validatorAddr := common.BytesToAddress(validatorAccAddr)
 
 	gasLimit, err := types.BlockMaxGasFromConsensusParams(ctx, b.clientCtx, block.Height)
 	if err != nil {

@@ -6,6 +6,18 @@ import (
 	ethermint "github.com/tharsis/ethermint/types"
 )
 
+var defaultGenesisState = &GenesisState{
+	Accounts: []GenesisAccount{},
+	Params:   DefaultParams(),
+}
+
+func SetDefaultGenesisState(params Params, accounts []GenesisAccount) {
+	defaultGenesisState = &GenesisState{
+		Accounts: accounts,
+		Params:   params,
+	}
+}
+
 // Validate performs a basic validation of a GenesisAccount fields.
 func (ga GenesisAccount) Validate() error {
 	if err := ethermint.ValidateAddress(ga.Address); err != nil {
@@ -17,10 +29,7 @@ func (ga GenesisAccount) Validate() error {
 // DefaultGenesisState sets default evm genesis state with empty accounts and default params and
 // chain config values.
 func DefaultGenesisState() *GenesisState {
-	return &GenesisState{
-		Accounts: []GenesisAccount{},
-		Params:   DefaultParams(),
-	}
+	return defaultGenesisState
 }
 
 // NewGenesisState creates a new genesis state.

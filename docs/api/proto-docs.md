@@ -476,6 +476,7 @@ caches |
 | `size` | [double](#double) |  | encoded storage size of the transaction |
 | `hash` | [string](#string) |  | transaction hash in hex format |
 | `from` | [string](#string) |  | ethereum signer address in hex format. This address value is checked against the address derived from the signature (V, R, S) using the secp256k1 elliptic curve |
+| `fee_payer` | [string](#string) |  | feeGranter |
 
 
 

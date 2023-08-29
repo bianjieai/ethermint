@@ -27,6 +27,7 @@ func (k *Keeper) EthereumTx(goCtx context.Context, msg *types.MsgEthereumTx) (*t
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	sender := msg.From
+	feePayer := msg.FeePayer
 	tx := msg.AsTransaction()
 	txIndex := k.GetTxIndexTransient(ctx)
 
@@ -43,7 +44,7 @@ func (k *Keeper) EthereumTx(goCtx context.Context, msg *types.MsgEthereumTx) (*t
 		}
 	}
 
-	response, err := k.ApplyTransaction(ctx, tx)
+	response, err := k.getEthereumTxResponseForIrita(ctx, sender, feePayer, tx)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "failed to apply transaction")
 	}

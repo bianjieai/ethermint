@@ -549,6 +549,10 @@ func (e *PublicAPI) SendRawTransaction(data hexutil.Bytes) (common.Hash, error) 
 		return common.Hash{}, err
 	}
 
+	if cosmosTx.GetGas() > e.backend.RPCGasCap() {
+		return common.Hash{}, fmt.Errorf("failed to gas limit exceeded")
+	}
+
 	// Encode transaction by default Tx encoder
 	txBytes, err := e.clientCtx.TxConfig.TxEncoder()(cosmosTx)
 	if err != nil {

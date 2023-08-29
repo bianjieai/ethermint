@@ -8,8 +8,8 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	ibcante "github.com/cosmos/ibc-go/v3/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	channelkeeper "github.com/cosmos/ibc-go/v2/modules/core/04-channel/keeper"
+	ibcante "github.com/cosmos/ibc-go/v2/modules/core/ante"
 
 	evmtypes "github.com/tharsis/ethermint/x/evm/types"
 )
@@ -19,7 +19,7 @@ import (
 type HandlerOptions struct {
 	AccountKeeper   evmtypes.AccountKeeper
 	BankKeeper      evmtypes.BankKeeper
-	IBCKeeper       *ibckeeper.Keeper
+	IBCKeeper       channelkeeper.Keeper
 	FeeMarketKeeper evmtypes.FeeMarketKeeper
 	EvmKeeper       EVMKeeper
 	FeegrantKeeper  ante.FeegrantKeeper

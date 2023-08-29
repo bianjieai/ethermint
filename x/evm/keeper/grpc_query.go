@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/eth/tracers/logger"
@@ -378,7 +377,7 @@ func (k Keeper) TraceTx(c context.Context, req *types.QueryTraceTxRequest) (*typ
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load evm config: %s", err.Error())
 	}
-	signer := ethtypes.MakeSigner(cfg.ChainConfig, big.NewInt(ctx.BlockHeight()))
+	signer := k.getSingerForIrita(cfg.ChainConfig, ctx)
 
 	txConfig := statedb.NewEmptyTxConfig(common.BytesToHash(ctx.HeaderHash().Bytes()))
 	for i, tx := range req.Predecessors {
@@ -443,7 +442,7 @@ func (k Keeper) TraceBlock(c context.Context, req *types.QueryTraceBlockRequest)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to load evm config")
 	}
-	signer := ethtypes.MakeSigner(cfg.ChainConfig, big.NewInt(ctx.BlockHeight()))
+	signer := k.getSingerForIrita(cfg.ChainConfig, ctx)
 	txsLength := len(req.Txs)
 	results := make([]*types.TxTraceResult, 0, txsLength)
 

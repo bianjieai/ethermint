@@ -109,21 +109,40 @@ func (avd EthAccountVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx
 			return ctx, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "from address cannot be empty")
 		}
 
-		// check whether the sender address is EOA
-		fromAddr := common.BytesToAddress(from)
-		acct := avd.evmKeeper.GetAccount(ctx, fromAddr)
+		feePayer := msgEthTx.GetFeePayer()
+		if !feePayer.Empty() {
+			feePayerAddr := common.BytesToAddress(feePayer)
+			feePayerAcct := avd.evmKeeper.GetAccount(ctx, feePayerAddr)
 
-		if acct == nil {
-			acc := avd.ak.NewAccountWithAddress(ctx, from)
-			avd.ak.SetAccount(ctx, acc)
-			acct = statedb.NewEmptyAccount()
-		} else if acct.IsContract() {
-			return ctx, sdkerrors.Wrapf(sdkerrors.ErrInvalidType,
-				"the sender is not EOA: address %s, codeHash <%s>", fromAddr, acct.CodeHash)
-		}
+			if feePayerAcct == nil {
+				feePayerAcc := avd.ak.NewAccountWithAddress(ctx, feePayer)
+				avd.ak.SetAccount(ctx, feePayerAcc)
+				feePayerAcct = statedb.NewEmptyAccount()
+			} else if feePayerAcct.IsContract() {
+				return ctx, sdkerrors.Wrapf(sdkerrors.ErrInvalidType,
+					"the sender's feePayer is not EOA: address %s, codeHash <%s>",
+					feePayerAddr, feePayerAcct.CodeHash)
+			}
 
-		if err := evmkeeper.CheckSenderBalance(sdk.NewIntFromBigInt(acct.Balance), txData); err != nil {
-			return ctx, sdkerrors.Wrap(err, "failed to check sender balance")
+			if err := evmkeeper.CheckSenderBalance(sdk.NewIntFromBigInt(feePayerAcct.Balance), txData); err != nil {
+				return ctx, sdkerrors.Wrap(err, "failed to check feePayer balance")
+			}
+		} else {
+			// check whether the sender address is EOA
+			fromAddr := common.BytesToAddress(from)
+			acct := avd.evmKeeper.GetAccount(ctx, fromAddr)
+
+			if acct == nil {
+				acc := avd.ak.NewAccountWithAddress(ctx, from)
+				avd.ak.SetAccount(ctx, acc)
+				acct = statedb.NewEmptyAccount()
+			} else if acct.IsContract() {
+				return ctx, sdkerrors.Wrapf(sdkerrors.ErrInvalidType,
+					"the sender is not EOA: address %s, codeHash <%s>", fromAddr, acct.CodeHash)
+			}
+			if err := evmkeeper.CheckSenderBalance(sdk.NewIntFromBigInt(acct.Balance), txData); err != nil {
+				return ctx, sdkerrors.Wrap(err, "failed to check sender balance")
+			}
 		}
 
 	}
