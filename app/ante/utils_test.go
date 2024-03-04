@@ -317,7 +317,6 @@ func (suite *AnteTestSuite) CreateTestEIP712MsgCreateValidator(from sdk.AccAddre
 		sdk.NewCoin(evmtypes.DefaultEVMDenom, sdk.NewInt(20)),
 		stakingtypes.NewDescription("moniker", "indentity", "website", "security_contract", "details"),
 		stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-		sdk.OneInt(),
 	)
 	suite.Require().NoError(err)
 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgCreate)
@@ -334,7 +333,6 @@ func (suite *AnteTestSuite) CreateTestEIP712MsgCreateValidator2(from sdk.AccAddr
 		// Ensure optional fields can be left blank
 		stakingtypes.NewDescription("moniker", "indentity", "", "", ""),
 		stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-		sdk.OneInt(),
 	)
 	suite.Require().NoError(err)
 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgCreate)
@@ -367,7 +365,6 @@ func (suite *AnteTestSuite) CreateTestEIP712MsgEditValidator(from sdk.AccAddress
 	msgEdit := stakingtypes.NewMsgEditValidator(
 		valAddr,
 		stakingtypes.NewDescription("moniker", "identity", "website", "security_contract", "details"),
-		nil,
 		nil,
 	)
 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgEdit)

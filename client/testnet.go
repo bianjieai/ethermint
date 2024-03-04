@@ -330,7 +330,6 @@ func initTestnetFiles(
 			sdk.NewCoin(ethermint.AttoPhoton, valTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
 			stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
-			sdk.OneInt(),
 		)
 		if err != nil {
 			return err
