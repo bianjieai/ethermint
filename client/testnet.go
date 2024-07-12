@@ -324,12 +324,13 @@ func initTestnetFiles(
 		})
 
 		valTokens := sdk.TokensFromConsensusPower(100, ethermint.PowerReduction)
-		createValMsg, err := stakingtypes.NewMsgCreateValidator(
+		createValMsg, err := ethermint.NewMsgCreateValidator(
 			sdk.ValAddress(addr),
 			valPubKeys[i],
 			sdk.NewCoin(ethermint.AttoPhoton, valTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
 			stakingtypes.NewCommissionRates(sdk.OneDec(), sdk.OneDec(), sdk.OneDec()),
+			sdk.ZeroInt(),
 		)
 		if err != nil {
 			return err
