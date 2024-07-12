@@ -1,4 +1,4 @@
-// Copyright 2021 Evmos Foundation
+// Package keeper Copyright 2021 Evmos Foundation
 // This file is part of Evmos' Ethermint library.
 //
 // The Ethermint library is free software: you can redistribute it and/or modify
@@ -78,6 +78,9 @@ type Keeper struct {
 	evmConstructor evm.Constructor
 	// Legacy subspace
 	ss paramstypes.Subspace
+
+	// options for the EVM
+	opts types.Options
 }
 
 // NewKeeper generates new evm module keeper
@@ -118,12 +121,19 @@ func NewKeeper(
 		evmConstructor:    evmConstructor,
 		tracer:            tracer,
 		ss:                ss,
+		opts:              types.DefaultOptions(),
 	}
 }
 
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", types.ModuleName)
+}
+
+// WithOptions sets the options to the keeper
+func (k *Keeper) WithOptions(opts types.Options) *Keeper{
+	k.opts = opts
+	return k
 }
 
 // WithChainID sets the chain id to the local variable in the keeper
