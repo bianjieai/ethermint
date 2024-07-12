@@ -1,4 +1,4 @@
-// Copyright 2021 Evmos Foundation
+// Package keeper Copyright 2021 Evmos Foundation
 // This file is part of Evmos' Ethermint library.
 //
 // The Ethermint library is free software: you can redistribute it and/or modify
@@ -44,7 +44,6 @@ import (
 // NOTE: the RANDOM opcode is currently not supported since it requires
 // RANDAO implementation. See https://github.com/evmos/ethermint/pull/1520#pullrequestreview-1200504697
 // for more information.
-
 func (k *Keeper) NewEVM(
 	ctx sdk.Context,
 	msg core.Message,
@@ -53,8 +52,8 @@ func (k *Keeper) NewEVM(
 	stateDB vm.StateDB,
 ) evm.EVM {
 	blockCtx := vm.BlockContext{
-		CanTransfer: core.CanTransfer,
-		Transfer:    core.Transfer,
+		CanTransfer: k.opts.CanTransfer,
+		Transfer:    k.opts.Transfer,
 		GetHash:     k.GetHashFn(ctx),
 		Coinbase:    cfg.CoinBase,
 		GasLimit:    ethermint.BlockGasLimit(ctx),

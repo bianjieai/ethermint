@@ -376,7 +376,14 @@ func (msg MsgEthereumTx) AsMessage(signer ethtypes.Signer, baseFee *big.Int) (co
 		false,
 	)
 
-	return ethMsg, nil
+	if msg.FeePayer == "" {
+		return ethMsg, nil
+	}
+
+	return Message{
+		Message:  ethMsg,
+		FeePayer: msg.FeePayer,
+	}, nil
 }
 
 // GetSender extracts the sender address from the signature values using the latest signer for the given chainID.
