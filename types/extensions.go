@@ -125,26 +125,3 @@ func NewMsgCreateValidator(
 		MinSelfDelegation: minSelfDelegation,
 	}, nil
 }
-
-// NewMsgEditValidator creates a new MsgEditValidator instance.
-//
-// Parameters:
-// - valAddr: validator address
-// - description: validator description
-// - newRate: new commission rate
-// - newMinSelfDelegation: new minimum self-delegation amount
-// Returns:
-// - *stakingtypes.MsgEditValidator
-func NewMsgEditValidator(
-	valAddr sdk.ValAddress, 
-	description stakingtypes.Description, 
-	newRate *sdk.Dec, 
-	newMinSelfDelegation *math.Int,
-	) *stakingtypes.MsgEditValidator {
-	return &stakingtypes.MsgEditValidator{
-		Description:       description,
-		CommissionRate:    newRate,
-		ValidatorAddress:  valAddr.String(),
-		MinSelfDelegation: newMinSelfDelegation,
-	}
-}

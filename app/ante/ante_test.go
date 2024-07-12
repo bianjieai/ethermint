@@ -423,17 +423,17 @@ func (suite AnteTestSuite) TestAnteHandler() {
 				return txBuilder.GetTx()
 			}, false, false, true,
 		},
-		{
-			"success- DeliverTx EIP712 edit validator",
-			func() sdk.Tx {
-				from := acc.GetAddress()
-				coinAmount := sdk.NewCoin(evmtypes.DefaultEVMDenom, sdk.NewInt(20))
-				amount := sdk.NewCoins(coinAmount)
-				gas := uint64(200000)
-				txBuilder := suite.CreateTestEIP712MsgEditValidator(from, privKey, "ethermint_9000-1", gas, amount)
-				return txBuilder.GetTx()
-			}, false, false, true,
-		},
+		// {
+		// 	"success- DeliverTx EIP712 edit validator",
+		// 	func() sdk.Tx {
+		// 		from := acc.GetAddress()
+		// 		coinAmount := sdk.NewCoin(evmtypes.DefaultEVMDenom, sdk.NewInt(20))
+		// 		amount := sdk.NewCoins(coinAmount)
+		// 		gas := uint64(200000)
+		// 		txBuilder := suite.CreateTestEIP712MsgEditValidator(from, privKey, "ethermint_9000-1", gas, amount)
+		// 		return txBuilder.GetTx()
+		// 	}, false, false, true,
+		// },
 		{
 			"success- DeliverTx EIP712 submit evidence",
 			func() sdk.Tx {

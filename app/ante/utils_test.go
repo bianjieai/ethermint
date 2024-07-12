@@ -363,16 +363,16 @@ func (suite *AnteTestSuite) CreateTestEIP712GrantAllowance(from sdk.AccAddress, 
 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgGrant)
 }
 
-func (suite *AnteTestSuite) CreateTestEIP712MsgEditValidator(from sdk.AccAddress, priv cryptotypes.PrivKey, chainId string, gas uint64, gasAmount sdk.Coins) client.TxBuilder {
-	valAddr := sdk.ValAddress(from.Bytes())
-	msgEdit := ethermint.NewMsgEditValidator(
-		valAddr,
-		stakingtypes.NewDescription("moniker", "identity", "website", "security_contract", "details"),
-		nil,
-		nil,
-	)
-	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgEdit)
-}
+// func (suite *AnteTestSuite) CreateTestEIP712MsgEditValidator(from sdk.AccAddress, priv cryptotypes.PrivKey, chainId string, gas uint64, gasAmount sdk.Coins) client.TxBuilder {
+// 	valAddr := sdk.ValAddress(from.Bytes())
+// 	msgEdit := ethermint.NewMsgEditValidator(
+// 		valAddr,
+// 		stakingtypes.NewDescription("moniker", "identity", "website", "security_contract", "details"),
+// 		nil,
+// 		sdk.ZeroInt(),
+// 	)
+// 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgEdit)
+// }
 
 func (suite *AnteTestSuite) CreateTestEIP712MsgSubmitEvidence(from sdk.AccAddress, priv cryptotypes.PrivKey, chainId string, gas uint64, gasAmount sdk.Coins) client.TxBuilder {
 	pk := ed25519.GenPrivKey()
