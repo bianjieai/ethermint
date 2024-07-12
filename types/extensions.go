@@ -22,6 +22,11 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var (
@@ -79,4 +84,67 @@ func ParseChainID(chainID string) (*big.Int, error) {
 	}
 
 	return chainIDInt, nil
+}
+
+
+// NewMsgCreateValidator creates a new MsgCreateValidator instance.
+//
+// Parameters:
+// - valAddr: validator address
+// - pubKey: public key
+// - selfDelegation: self-delegation amount
+// - description: validator description
+// - commission: commission rates
+// - minSelfDelegation: minimum self-delegation amount
+//
+// Returns:
+// - *stakingtypes.MsgCreateValidator
+// - error
+func NewMsgCreateValidator(
+	valAddr sdk.ValAddress,
+	pubKey cryptotypes.PubKey, //nolint:interfacer
+	selfDelegation sdk.Coin,
+	description stakingtypes.Description,
+	commission stakingtypes.CommissionRates,
+	minSelfDelegation math.Int,
+) (*stakingtypes.MsgCreateValidator, error) {
+	var pkAny *codectypes.Any
+	if pubKey != nil {
+		var err error
+		if pkAny, err = codectypes.NewAnyWithValue(pubKey); err != nil {
+			return nil, err
+		}
+	}
+	return &stakingtypes.MsgCreateValidator{
+		Description:       description,
+		DelegatorAddress:  sdk.AccAddress(valAddr).String(),
+		ValidatorAddress:  valAddr.String(),
+		Pubkey:            pkAny,
+		Value:             selfDelegation,
+		Commission:        commission,
+		MinSelfDelegation: minSelfDelegation,
+	}, nil
+}
+
+// NewMsgEditValidator creates a new MsgEditValidator instance.
+//
+// Parameters:
+// - valAddr: validator address
+// - description: validator description
+// - newRate: new commission rate
+// - newMinSelfDelegation: new minimum self-delegation amount
+// Returns:
+// - *stakingtypes.MsgEditValidator
+func NewMsgEditValidator(
+	valAddr sdk.ValAddress, 
+	description stakingtypes.Description, 
+	newRate *sdk.Dec, 
+	newMinSelfDelegation *math.Int,
+	) *stakingtypes.MsgEditValidator {
+	return &stakingtypes.MsgEditValidator{
+		Description:       description,
+		CommissionRate:    newRate,
+		ValidatorAddress:  valAddr.String(),
+		MinSelfDelegation: newMinSelfDelegation,
+	}
 }

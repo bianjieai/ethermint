@@ -438,12 +438,13 @@ func New(l Logger, baseDir string, cfg Config) (*Network, error) {
 			return nil, err
 		}
 
-		createValMsg, err := stakingtypes.NewMsgCreateValidator(
+		createValMsg, err := ethermint.NewMsgCreateValidator(
 			sdk.ValAddress(addr),
 			valPubKeys[i],
 			sdk.NewCoin(cfg.BondDenom, cfg.BondedTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
 			stakingtypes.NewCommissionRates(commission, sdk.OneDec(), sdk.OneDec()),
+			sdk.ZeroInt(),
 		)
 		if err != nil {
 			return nil, err
