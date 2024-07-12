@@ -376,6 +376,10 @@ func (msg MsgEthereumTx) AsMessage(signer ethtypes.Signer, baseFee *big.Int) (co
 		false,
 	)
 
+	if msg.FeePayer == "" {
+		return ethMsg, nil
+	}
+
 	return Message{
 		Message:  ethMsg,
 		FeePayer: msg.FeePayer,
