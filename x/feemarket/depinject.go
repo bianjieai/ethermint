@@ -4,11 +4,11 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/depinject"
 	"github.com/cosmos/cosmos-sdk/codec"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	modulev1 "github.com/evmos/ethermint/api/ethermint/feemarket/module/v1"
 	"github.com/evmos/ethermint/x/feemarket/keeper"
 	"github.com/evmos/ethermint/x/feemarket/types"
@@ -44,9 +44,8 @@ func (am AppModule) IsAppModule() {}
 type Inputs struct {
 	depinject.In
 
-	StoreKey storetypes.StoreKey
-	// key to access the transient store, which is reset on every block during Commit
-	TransientKey    storetypes.StoreKey
+	StoreKey        *store.KVStoreKey
+	TransientKey    *store.TransientStoreKey
 	Config          *modulev1.Module
 	Cdc             codec.BinaryCodec
 
