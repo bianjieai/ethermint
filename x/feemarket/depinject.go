@@ -45,10 +45,10 @@ type Inputs struct {
 	depinject.In
 
 	StoreKey        *store.KVStoreKey
+	Cdc             codec.Codec
 	TransientKey    *store.TransientStoreKey
 	Config          *modulev1.Module
-	Cdc             codec.BinaryCodec
-
+	
 	// LegacySubspace is used solely for migration of x/params managed parameters
 	LegacySubspace    paramstypes.Subspace     `optional:"true"`
 }
