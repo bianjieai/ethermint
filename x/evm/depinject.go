@@ -49,7 +49,7 @@ type Inputs struct {
 	StoreKey        *store.KVStoreKey
 	TransientKey    *store.TransientStoreKey
 	Config          *modulev1.Module
-	Cdc             codec.BinaryCodec
+	Cdc             codec.Codec
 	AccountKeeper   types.AccountKeeper
 	BankKeeper      types.BankKeeper
 	StakingKeeper   types.StakingKeeper
@@ -65,7 +65,7 @@ type Inputs struct {
 type HookInputs struct {
 	depinject.In
 
-	Hooks []types.EvmHooks
+	Hooks []types.EvmHooks `optional:"true"`
 	Keeper *keeper.Keeper
 }
 
