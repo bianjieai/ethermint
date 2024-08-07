@@ -13,14 +13,14 @@ import (
 // MigrateStore adds the MinGasPrice param with a value of 0
 // and MinGasMultiplier to 0,5
 func MigrateStore(ctx sdk.Context, legacySubspace feemarkettypes.Subspace) error {
-	paramstore, ok := legacySubspace.(*paramtypes.Subspace)
+	paramstore, ok := legacySubspace.(paramtypes.Subspace)
 	if !ok {
 		return fmt.Errorf("invalid legacySubspace type: %T", paramstore)
 	}
 
 	if !paramstore.HasKeyTable() {
 		ps := paramstore.WithKeyTable(feemarkettypes.ParamKeyTable())
-		paramstore = &ps
+		paramstore = ps
 	}
 
 	// add MinGasPrice

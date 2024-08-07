@@ -10,13 +10,13 @@ import (
 
 // MigrateStore sets the default AllowUnprotectedTxs parameter.
 func MigrateStore(ctx sdk.Context, legacySubspace types.Subspace) error {
-	paramstore, ok := legacySubspace.(*paramtypes.Subspace)
+	paramstore, ok := legacySubspace.(paramtypes.Subspace)
 	if !ok {
 		return fmt.Errorf("invalid legacySubspace type: %T", paramstore)
 	}
 	if !paramstore.HasKeyTable() {
 		ps := paramstore.WithKeyTable(types.ParamKeyTable())
-		paramstore = &ps
+		paramstore = ps
 	}
 	// add RejectUnprotected
 	paramstore.Set(ctx, types.ParamStoreKeyAllowUnprotectedTxs, types.DefaultAllowUnprotectedTxs)

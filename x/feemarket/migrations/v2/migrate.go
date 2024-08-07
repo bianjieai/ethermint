@@ -23,7 +23,7 @@ func MigrateStore(
 	legacySubspace feemarkettypes.Subspace,
 	storeKey storetypes.StoreKey,
 ) error {
-	paramstore, ok := legacySubspace.(*paramtypes.Subspace)
+	paramstore, ok := legacySubspace.(paramtypes.Subspace)
 	if !ok {
 		return fmt.Errorf("invalid legacySubspace type: %T", paramstore)
 	}
@@ -34,7 +34,7 @@ func MigrateStore(
 
 	if !paramstore.HasKeyTable() {
 		ps := paramstore.WithKeyTable(v2types.ParamKeyTable())
-		paramstore = &ps
+		paramstore = ps
 	}
 
 	switch {

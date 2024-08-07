@@ -3,6 +3,9 @@ module github.com/evmos/ethermint
 go 1.19
 
 require (
+	cosmossdk.io/api v0.3.1
+	cosmossdk.io/core v0.5.1
+	cosmossdk.io/depinject v1.0.0-alpha.4
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/math v1.2.0
 	cosmossdk.io/simapp v0.0.0-20230608160436-666c345ad23d
@@ -43,6 +46,7 @@ require (
 	golang.org/x/text v0.14.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231212172506-995d672761c0
 	google.golang.org/grpc v1.60.1
+	google.golang.org/protobuf v1.32.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -52,9 +56,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/storage v1.30.1 // indirect
-	cosmossdk.io/api v0.3.1 // indirect
-	cosmossdk.io/core v0.5.1 // indirect
-	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
 	cosmossdk.io/log v1.3.1 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
@@ -208,7 +209,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240102182953-50ed04b92917 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240108191215-35c7eff3a6b1 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
