@@ -16,7 +16,9 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // UnpackInterfaces implements UnpackInterfacesMesssage.UnpackInterfaces
@@ -26,9 +28,13 @@ func (m QueryTraceTxRequest) UnpackInterfaces(unpacker codectypes.AnyUnpacker) e
 			return err
 		}
 	}
+	if m.Msg == nil {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "msg cannot be nil")
+	}
 	return m.Msg.UnpackInterfaces(unpacker)
 }
 
+// UnpackInterfaces implements UnpackInterfacesMesssage.UnpackInterfaces
 func (m QueryTraceBlockRequest) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	for _, msg := range m.Txs {
 		if err := msg.UnpackInterfaces(unpacker); err != nil {
