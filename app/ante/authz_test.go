@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"time"
 
+	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -341,20 +342,30 @@ func (suite *AnteTestSuite) TestRejectDeliverMsgsInAuthz() {
 			bz, err := txEncoder(tx)
 			suite.Require().NoError(err)
 
-			resCheckTx := suite.app.CheckTx(
-				abci.RequestCheckTx{
+			resCheckTx,err := suite.app.CheckTx(
+				&abci.RequestCheckTx{
 					Tx:   bz,
 					Type: abci.CheckTxType_New,
 				},
 			)
+			suite.Require().NoError(err)
 			suite.Require().Equal(resCheckTx.Code, tc.expectedCode, resCheckTx.Log)
 
-			resDeliverTx := suite.app.DeliverTx(
-				abci.RequestDeliverTx{
-					Tx: bz,
+			header := suite.ctx.BlockHeader()
+			blockRes, err := suite.app.FinalizeBlock(
+				&abci.RequestFinalizeBlock{
+					Height:             suite.ctx.BlockHeight() + 1,
+					Txs:                [][]byte{bz},
+					Hash:               header.AppHash,
+					NextValidatorsHash: header.NextValidatorsHash,
+					ProposerAddress:    header.ProposerAddress,
+					Time:               header.Time.Add(time.Second),
 				},
 			)
-			suite.Require().Equal(resDeliverTx.Code, tc.expectedCode, resDeliverTx.Log)
+			suite.Require().NoError(err)
+			suite.Require().Len(blockRes.TxResults, 1)
+			txRes := blockRes.TxResults[0]
+			suite.Require().Equal(txRes.Code, tc.expectedCode, txRes.Log)
 		})
 	}
 }
@@ -439,7 +450,7 @@ func (suite *AnteTestSuite) createTx(priv cryptotypes.PrivKey, msgs ...sdk.Msg) 
 }
 
 func (suite *AnteTestSuite) createEIP712Tx(priv cryptotypes.PrivKey, msgs ...sdk.Msg) (sdk.Tx, error) {
-	coinAmount := sdk.NewCoin(evmtypes.DefaultEVMDenom, sdk.NewInt(20))
+	coinAmount := sdk.NewCoin(evmtypes.DefaultEVMDenom, math.NewInt(20))
 	fees := sdk.NewCoins(coinAmount)
 	cosmosTxArgs := utiltx.CosmosTxArgs{
 		TxCfg:   suite.clientCtx.TxConfig,

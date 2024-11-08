@@ -3,6 +3,8 @@ package ante
 import (
 	"math/big"
 
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -30,12 +32,12 @@ func (ev EthFeeGrantValidator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	for _, msg := range tx.GetMsgs() {
 		msgEthTx, ok := msg.(*evmtypes.MsgEthereumTx)
 		if !ok {
-			return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type %T, expected %T", tx, (*evmtypes.MsgEthereumTx)(nil))
+			return ctx, errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type %T, expected %T", tx, (*evmtypes.MsgEthereumTx)(nil))
 		}
 		ethTx := msgEthTx.AsTransaction()
 		sender, err := signer.Sender(ethTx)
 		if err != nil {
-			return ctx, sdkerrors.Wrapf(
+			return ctx, errorsmod.Wrapf(
 				sdkerrors.ErrorInvalidSigner,
 				"couldn't retrieve sender address ('%s') from the ethereum transaction: %s",
 				msgEthTx.From,
@@ -44,24 +46,24 @@ func (ev EthFeeGrantValidator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		}
 		txData, err := evmtypes.UnpackTxData(msgEthTx.Data)
 		if err != nil {
-			return ctx, sdkerrors.Wrap(err, "failed to unpack tx data")
+			return ctx, errorsmod.Wrap(err, "failed to unpack tx data")
 		}
 		feeGrantee := sender.Bytes()
 		feeGranteeCosmosAddr := sdk.AccAddress(feeGrantee)
 		feePayer := msgEthTx.GetFeePayer()
 		feeAmt := txData.Fee()
 		if feeAmt.Sign() == 0 {
-			return ctx, sdkerrors.Wrap(err, "failed to fee amount")
+			return ctx, errorsmod.Wrap(err, "failed to fee amount")
 		}
 
-		fees := sdk.Coins{sdk.NewCoin(params.EvmDenom, sdk.NewIntFromBigInt(feeAmt))}
+		fees := sdk.Coins{sdk.NewCoin(params.EvmDenom, math.NewIntFromBigInt(feeAmt))}
 
 		msgs := []sdk.Msg{msg}
 
 		if feePayer != nil {
 			err := ev.feegrantKeeper.UseGrantedFees(ctx, feePayer, feeGrantee, fees, msgs)
 			if err != nil {
-				return ctx, sdkerrors.Wrapf(err,
+				return ctx, errorsmod.Wrapf(err,
 					"%s(%s) not allowed to pay fees from %s", sender.Hex(), feeGranteeCosmosAddr, feePayer)
 			}
 		}

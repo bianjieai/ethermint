@@ -16,14 +16,19 @@
 package app
 
 import (
+	"context"
+
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
+// RegisterUpgradeHandlers registers the upgrade handler for the
+// "integration-test-upgrade" plan. It sets an upgrade handler that
+// executes the migrations defined by the module manager using the
+// provided configuration and version map.
 func (app *EthermintApp) RegisterUpgradeHandlers() {
 	planName := "integration-test-upgrade"
-	app.UpgradeKeeper.SetUpgradeHandler(planName, func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+	app.UpgradeKeeper.SetUpgradeHandler(planName, func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 	})
 }
