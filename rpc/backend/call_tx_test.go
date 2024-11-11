@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/evmos/ethermint/rpc/backend/mocks"
 	rpctypes "github.com/evmos/ethermint/rpc/types"
-	"github.com/evmos/ethermint/tests"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	"google.golang.org/grpc/metadata"
 )
@@ -20,7 +20,7 @@ func (suite *BackendTestSuite) TestResend() {
 	txNonce := (hexutil.Uint64)(1)
 	baseFee := math.NewInt(1)
 	gasPrice := new(hexutil.Big)
-	toAddr := tests.GenerateAddress()
+	toAddr := utiltx.GenerateAddress()
 	chainID := (*hexutil.Big)(suite.backend.chainID)
 	callArgs := evmtypes.TransactionArgs{
 		From:                 nil,
@@ -363,7 +363,7 @@ func (suite *BackendTestSuite) TestSendRawTransaction() {
 func (suite *BackendTestSuite) TestDoCall() {
 	_, bz := suite.buildEthereumTx()
 	gasPrice := (*hexutil.Big)(big.NewInt(1))
-	toAddr := tests.GenerateAddress()
+	toAddr := utiltx.GenerateAddress()
 	chainID := (*hexutil.Big)(suite.backend.chainID)
 	callArgs := evmtypes.TransactionArgs{
 		From:                 nil,

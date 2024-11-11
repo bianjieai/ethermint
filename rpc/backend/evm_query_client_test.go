@@ -14,7 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/evmos/ethermint/rpc/backend/mocks"
 	rpc "github.com/evmos/ethermint/rpc/types"
-	"github.com/evmos/ethermint/tests"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -214,7 +214,7 @@ func RegisterValidatorAccountError(queryClient *mocks.EVMQueryClient) {
 func TestRegisterValidatorAccount(t *testing.T) {
 	queryClient := mocks.NewEVMQueryClient(t)
 
-	validator := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	validator := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	RegisterValidatorAccount(queryClient, validator)
 	res, err := queryClient.ValidatorAccount(rpc.ContextWithHeight(1), &evmtypes.QueryValidatorAccountRequest{})
 	require.Equal(t, &evmtypes.QueryValidatorAccountResponse{AccountAddress: validator.String()}, res)

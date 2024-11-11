@@ -1,7 +1,6 @@
 package ante_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/simapp"
@@ -122,7 +122,7 @@ func (suite *AnteTestSuite) SetupTest() {
 	suite.app.EvmKeeper.WithChainID(suite.ctx)
 
 	infCtx := suite.ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
-	suite.app.AccountKeeper.SetParams(infCtx, authtypes.DefaultParams())
+	suite.app.AccountKeeper.Params.Set(infCtx, authtypes.DefaultParams())
 
 	addr := sdk.AccAddress(priv.PubKey().Address().Bytes())
 	acc := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addr)
@@ -244,13 +244,16 @@ func (suite *AnteTestSuite) CreateTestTxBuilder(
 	builder.SetFeeAmount(fees)
 	builder.SetGasLimit(msg.GetGas())
 
+	defaultSignMode, err := authsigning.APISignModeToInternal(suite.clientCtx.TxConfig.SignModeHandler().DefaultMode())
+	suite.Require().NoError(err)
+
 	if signCosmosTx {
 		// First round: we gather all the signer infos. We use the "set empty
 		// signature" hack to do that.
 		sigV2 := signing.SignatureV2{
 			PubKey: priv.PubKey(),
 			Data: &signing.SingleSignatureData{
-				SignMode:  suite.clientCtx.TxConfig.SignModeHandler().DefaultMode(),
+				SignMode:  defaultSignMode,
 				Signature: nil,
 			},
 			Sequence: txData.GetNonce(),
@@ -269,7 +272,8 @@ func (suite *AnteTestSuite) CreateTestTxBuilder(
 			Sequence:      txData.GetNonce(),
 		}
 		sigV2, err = tx.SignWithPrivKey(
-			suite.clientCtx.TxConfig.SignModeHandler().DefaultMode(), signerData,
+			suite.ctx,
+			defaultSignMode, signerData,
 			txBuilder, priv, suite.clientCtx.TxConfig, txData.GetNonce(),
 		)
 		suite.Require().NoError(err)
@@ -305,7 +309,7 @@ func (suite *AnteTestSuite) CreateTestEIP712TxBuilderMsgDelegate(from sdk.AccAdd
 	// Build MsgSend
 	valEthAddr := tests.GenerateAddress()
 	valAddr := sdk.ValAddress(valEthAddr.Bytes())
-	msgSend := stakingtypes.NewMsgDelegate(from, valAddr, sdk.NewCoin(evmtypes.DefaultEVMDenom, sdkmath.NewInt(20)))
+	msgSend := stakingtypes.NewMsgDelegate(from.String(), valAddr.String(), sdk.NewCoin(evmtypes.DefaultEVMDenom, sdkmath.NewInt(20)))
 	return suite.CreateTestEIP712SingleMessageTxBuilder(priv, chainId, gas, gasAmount, msgSend)
 }
 
@@ -424,7 +428,7 @@ func (suite *AnteTestSuite) CreateTestEIP712SubmitProposalV1(from sdk.AccAddress
 		proposalMsgs,
 		sdk.NewCoins(sdk.NewCoin(evmtypes.DefaultEVMDenom, sdkmath.NewInt(100))),
 		sdk.MustBech32ifyAddressBytes(sdk.GetConfig().GetBech32AccountAddrPrefix(), from.Bytes()),
-		"Metadata", "", "",
+		"Metadata", "", "", false,
 	)
 
 	suite.Require().NoError(err)
@@ -463,15 +467,6 @@ func StdSignBytes(cdc *codec.LegacyAmino, chainID string, accnum uint64, sequenc
 		}
 
 		msgsBytes = append(msgsBytes, json.RawMessage(legacyMsg.GetSignBytes()))
-	}
-
-	var stdTip *legacytx.StdTip
-	if tip != nil {
-		if tip.Tipper == "" {
-			panic(fmt.Errorf("tipper cannot be empty"))
-		}
-
-		stdTip = &legacytx.StdTip{Amount: tip.Amount, Tipper: tip.Tipper}
 	}
 
 	bz, err := cdc.MarshalJSON(legacytx.StdSignDoc{
@@ -611,8 +606,9 @@ func (suite *AnteTestSuite) createSignerBytes(chainId string, signMode signing.S
 		PubKey:        pubKey,
 	}
 
-	signerBytes, err := suite.clientCtx.TxConfig.SignModeHandler().GetSignBytes(
-		context.Background(),
+	signerBytes, err := authsigning.GetSignBytesAdapter(
+		suite.ctx,
+		suite.clientCtx.TxConfig.SignModeHandler(),
 		signMode,
 		signerInfo,
 		txBuilder.GetTx(),
@@ -708,6 +704,11 @@ func NextFn(ctx sdk.Context, _ sdk.Tx, _ bool) (sdk.Context, error) {
 var _ sdk.Tx = &invalidTx{}
 
 type invalidTx struct{}
+
+// GetMsgsV2 implements types.Tx.
+func (i *invalidTx) GetMsgsV2() ([]protoreflect.ProtoMessage, error) {
+	panic("unimplemented")
+}
 
 func (invalidTx) GetMsgs() []sdk.Msg   { return []sdk.Msg{nil} }
 func (invalidTx) ValidateBasic() error { return nil }

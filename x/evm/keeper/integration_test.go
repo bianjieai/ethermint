@@ -17,8 +17,8 @@ import (
 	"github.com/evmos/ethermint/app"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/evmos/ethermint/encoding"
-	"github.com/evmos/ethermint/tests"
 	"github.com/evmos/ethermint/testutil"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	"github.com/evmos/ethermint/x/feemarket/types"
 
 	"cosmossdk.io/log"
@@ -56,14 +56,14 @@ var _ = Describe("Feemarket", func() {
 				// 100_000`. With the fee calculation `Fee = (baseFee + tip) * gasLimit`,
 				// a `minGasPrices = 5_000_000_000` results in `minGlobalFee =
 				// 500_000_000_000_000`
-				privKey, _ = setupTestWithContext("1", sdk.NewDec(minGasPrices), math.NewInt(baseFee))
+				privKey, _ = setupTestWithContext("1", math.LegacyNewDec(minGasPrices), math.NewInt(baseFee))
 			})
 
 			Context("during CheckTx", func() {
 				DescribeTable("should accept transactions with gas Limit > 0",
 					func(malleate getprices) {
 						p := malleate()
-						to := tests.GenerateAddress()
+						to := utiltx.GenerateAddress()
 						msgEthereumTx := buildEthTx(privKey, &to, p.gasLimit, p.gasPrice, p.gasFeeCap, p.gasTipCap, p.accesses)
 						res := checkEthTx(privKey, msgEthereumTx)
 						Expect(res.IsOK()).To(Equal(true), "transaction should have succeeded", res.GetLog())
@@ -78,7 +78,7 @@ var _ = Describe("Feemarket", func() {
 				DescribeTable("should not accept transactions with gas Limit > 0",
 					func(malleate getprices) {
 						p := malleate()
-						to := tests.GenerateAddress()
+						to := utiltx.GenerateAddress()
 						msgEthereumTx := buildEthTx(privKey, &to, p.gasLimit, p.gasPrice, p.gasFeeCap, p.gasTipCap, p.accesses)
 						res := checkEthTx(privKey, msgEthereumTx)
 						Expect(res.IsOK()).To(Equal(false), "transaction should have succeeded", res.GetLog())
@@ -96,7 +96,7 @@ var _ = Describe("Feemarket", func() {
 				DescribeTable("should accept transactions with gas Limit > 0",
 					func(malleate getprices) {
 						p := malleate()
-						to := tests.GenerateAddress()
+						to := utiltx.GenerateAddress()
 						msgEthereumTx := buildEthTx(privKey, &to, p.gasLimit, p.gasPrice, p.gasFeeCap, p.gasTipCap, p.accesses)
 						res := deliverEthTx(privKey, msgEthereumTx)
 						Expect(res.IsOK()).To(Equal(true), "transaction should have succeeded", res.GetLog())
@@ -111,7 +111,7 @@ var _ = Describe("Feemarket", func() {
 				DescribeTable("should not accept transactions with gas Limit > 0",
 					func(malleate getprices) {
 						p := malleate()
-						to := tests.GenerateAddress()
+						to := utiltx.GenerateAddress()
 						msgEthereumTx := buildEthTx(privKey, &to, p.gasLimit, p.gasPrice, p.gasFeeCap, p.gasTipCap, p.accesses)
 						res := checkEthTx(privKey, msgEthereumTx)
 						Expect(res.IsOK()).To(Equal(false), "transaction should have succeeded", res.GetLog())
@@ -130,7 +130,7 @@ var _ = Describe("Feemarket", func() {
 
 // setupTestWithContext sets up a test chain with an example Cosmos send msg,
 // given a local (validator config) and a global (feemarket param) minGasPrice
-func setupTestWithContext(valMinGasPrice string, minGasPrice sdk.Dec, baseFee sdk.Int) (*ethsecp256k1.PrivKey, banktypes.MsgSend) {
+func setupTestWithContext(valMinGasPrice string, minGasPrice math.LegacyDec, baseFee math.Int) (*ethsecp256k1.PrivKey, banktypes.MsgSend) {
 	privKey, msg := setupTest(valMinGasPrice + s.denom)
 	params := types.DefaultParams()
 	params.MinGasPrice = minGasPrice
@@ -176,8 +176,6 @@ func setupChain(localMinGasPricesStr string) {
 		true,
 		map[int64]bool{},
 		app.DefaultNodeHome,
-		5,
-		encoding.MakeConfig(app.ModuleBasics),
 		simtestutil.EmptyAppOptions{},
 		baseapp.SetMinGasPrices(localMinGasPricesStr),
 		// NOTE: added as init examines the chain id
@@ -192,7 +190,7 @@ func setupChain(localMinGasPricesStr string) {
 
 	// Initialize the chain
 	newapp.InitChain(
-		abci.RequestInitChain{
+		&abci.RequestInitChain{
 			ChainId:         "ethermint_9000-1",
 			Validators:      []abci.ValidatorUpdate{},
 			AppStateBytes:   stateBytes,
@@ -205,8 +203,8 @@ func setupChain(localMinGasPricesStr string) {
 }
 
 func generateKey() (*ethsecp256k1.PrivKey, sdk.AccAddress) {
-	address, priv := tests.NewAddrKey()
-	return priv.(*ethsecp256k1.PrivKey), sdk.AccAddress(address.Bytes())
+	address, priv := utiltx.NewAddrKey()
+	return priv, sdk.AccAddress(address.Bytes())
 }
 
 func getNonce(addressBytes []byte) uint64 {
@@ -255,7 +253,7 @@ func prepareEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereu
 	s.Require().True(ok)
 	builder.SetExtensionOptions(option)
 
-	err = msgEthereumTx.Sign(s.ethSigner, tests.NewSigner(priv))
+	err = msgEthereumTx.Sign(s.ethSigner, utiltx.NewSigner(priv))
 	s.Require().NoError(err)
 
 	// A valid msg should have empty `From`
@@ -278,16 +276,31 @@ func prepareEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereu
 	return bz
 }
 
-func checkEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) abci.ResponseCheckTx {
+func checkEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) *abci.ResponseCheckTx {
 	bz := prepareEthTx(priv, msgEthereumTx)
-	req := abci.RequestCheckTx{Tx: bz}
-	res := s.app.BaseApp.CheckTx(req)
+	req := &abci.RequestCheckTx{Tx: bz}
+	res,err := s.app.BaseApp.CheckTx(req)
+	if err != nil {
+		panic(err)
+	}
 	return res
 }
 
-func deliverEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) abci.ResponseDeliverTx {
+func deliverEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) *abci.ExecTxResult {
 	bz := prepareEthTx(priv, msgEthereumTx)
-	req := abci.RequestDeliverTx{Tx: bz}
-	res := s.app.BaseApp.DeliverTx(req)
-	return res
+	_, err := s.app.BaseApp.ProcessProposal(&abci.RequestProcessProposal{
+		Txs:             [][]byte{bz},
+		Height:          s.ctx.BlockHeight(),
+		ProposerAddress: s.ctx.BlockHeader().ProposerAddress,
+	})
+	s.Require().NoError(err)
+
+	req := &abci.RequestFinalizeBlock{
+		Txs:             [][]byte{bz},
+		Height:          s.ctx.BlockHeight(),
+		ProposerAddress: s.ctx.BlockHeader().ProposerAddress,
+	}
+	res, err := s.app.BaseApp.FinalizeBlock(req)
+	s.Require().NoError(err)
+	return res.TxResults[0]
 }

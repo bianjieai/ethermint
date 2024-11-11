@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 	rpc "github.com/evmos/ethermint/rpc/types"
-	"github.com/evmos/ethermint/tests"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/cometbft/cometbft/abci/types"
@@ -189,7 +189,7 @@ func (suite *BackendTestSuite) TestChainId() {
 }
 
 func (suite *BackendTestSuite) TestGetCoinbase() {
-	validatorAcc := sdk.AccAddress(tests.GenerateAddress().Bytes())
+	validatorAcc := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
 	testCases := []struct {
 		name         string
 		registerMock func()
@@ -400,7 +400,7 @@ func (suite *BackendTestSuite) TestFeeHistory() {
 			1,
 			1,
 			nil,
-			sdk.AccAddress(tests.GenerateAddress().Bytes()),
+			sdk.AccAddress(utiltx.GenerateAddress().Bytes()),
 			false,
 		},
 		{
@@ -427,7 +427,7 @@ func (suite *BackendTestSuite) TestFeeHistory() {
 				GasUsedRatio: []float64{0},
 				Reward:       [][]*hexutil.Big{{(*hexutil.Big)(big.NewInt(0)), (*hexutil.Big)(big.NewInt(0)), (*hexutil.Big)(big.NewInt(0)), (*hexutil.Big)(big.NewInt(0))}},
 			},
-			sdk.AccAddress(tests.GenerateAddress().Bytes()),
+			sdk.AccAddress(utiltx.GenerateAddress().Bytes()),
 			true,
 		},
 	}

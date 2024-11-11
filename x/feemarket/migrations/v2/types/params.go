@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/params"
 )
@@ -109,7 +108,7 @@ func validateElasticityMultiplier(i interface{}) error {
 }
 
 func validateBaseFee(i interface{}) error {
-	value, ok := i.(sdk.Int)
+	value, ok := i.(math.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

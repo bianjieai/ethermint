@@ -166,14 +166,14 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 func (AppModule) QuerierRoute() string { return types.RouterKey }
 
 // BeginBlock returns the begin block for the evm module.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	am.keeper.BeginBlock(ctx, req)
+func (am AppModule) BeginBlock(ctx sdk.Context) {
+	am.keeper.BeginBlock(ctx)
 }
 
 // EndBlock returns the end blocker for the evm module. It returns no validator
 // updates.
-func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return am.keeper.EndBlock(ctx, req)
+func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
+	return am.keeper.EndBlock(ctx)
 }
 
 // InitGenesis performs genesis initialization for the evm module. It returns
@@ -197,12 +197,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // RegisterStoreDecoder registers a decoder for evm module's types
-func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {
-}
-
-// ProposalContents doesn't return any content functions for governance proposals.
-func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
-	return nil
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {
 }
 
 // GenerateGenesisState creates a randomized GenState of the evm module.

@@ -20,16 +20,15 @@ import (
 
 	"cosmossdk.io/math"
 	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/params"
 )
 
 var (
 	// DefaultMinGasMultiplier is 0.5 or 50%
-	DefaultMinGasMultiplier = sdk.NewDecWithPrec(50, 2)
+	DefaultMinGasMultiplier = math.LegacyNewDecWithPrec(50, 2)
 	// DefaultMinGasPrice is 0 (i.e disabled)
-	DefaultMinGasPrice = sdk.ZeroDec()
+	DefaultMinGasPrice = math.LegacyZeroDec()
 	// DefaultEnableHeight is 0 (i.e disabled)
 	DefaultEnableHeight = int64(0)
 	// DefaultNoBaseFee is false
@@ -73,8 +72,8 @@ func NewParams(
 	elasticityMultiplier uint32,
 	baseFee uint64,
 	enableHeight int64,
-	minGasPrice sdk.Dec,
-	minGasPriceMultiplier sdk.Dec,
+	minGasPrice math.LegacyDec,
+	minGasPriceMultiplier math.LegacyDec,
 ) Params {
 	return Params{
 		NoBaseFee:                noBaseFee,
@@ -134,7 +133,7 @@ func (p *Params) IsBaseFeeEnabled(height int64) bool {
 }
 
 func validateMinGasPrice(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -199,7 +198,7 @@ func validateEnableHeight(i interface{}) error {
 }
 
 func validateMinGasMultiplier(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

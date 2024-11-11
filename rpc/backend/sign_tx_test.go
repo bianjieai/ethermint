@@ -14,7 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	"github.com/evmos/ethermint/rpc/backend/mocks"
-	"github.com/evmos/ethermint/tests"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	"google.golang.org/grpc/metadata"
 )
@@ -23,7 +23,7 @@ func (suite *BackendTestSuite) TestSendTransaction() {
 	gasPrice := new(hexutil.Big)
 	gas := hexutil.Uint64(1)
 	zeroGas := hexutil.Uint64(0)
-	toAddr := tests.GenerateAddress()
+	toAddr := utiltx.GenerateAddress()
 	priv, _ := ethsecp256k1.GenerateKey()
 	from := common.BytesToAddress(priv.PubKey().Address().Bytes())
 	nonce := hexutil.Uint64(1)
@@ -168,7 +168,7 @@ func (suite *BackendTestSuite) TestSendTransaction() {
 }
 
 func (suite *BackendTestSuite) TestSign() {
-	from, priv := tests.NewAddrKey()
+	from, priv := utiltx.NewAddrKey()
 	testCases := []struct {
 		name         string
 		registerMock func()
@@ -214,7 +214,7 @@ func (suite *BackendTestSuite) TestSign() {
 }
 
 func (suite *BackendTestSuite) TestSignTypedData() {
-	from, priv := tests.NewAddrKey()
+	from, priv := utiltx.NewAddrKey()
 	testCases := []struct {
 		name           string
 		registerMock   func()

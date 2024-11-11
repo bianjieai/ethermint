@@ -16,7 +16,6 @@
 package ante
 
 import (
-	"errors"
 	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
@@ -111,12 +110,6 @@ func (vbd EthValidateBasicDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return next(ctx, tx, simulate)
 	}
 
-	err := tx.ValidateBasic()
-	// ErrNoSignatures is fine with eth tx
-	if err != nil && !errors.Is(err, errortypes.ErrNoSignatures) {
-		return ctx, errorsmod.Wrap(err, "tx basic validation failed")
-	}
-
 	// For eth type cosmos tx, some fields should be verified as zero values,
 	// since we will only verify the signature against the hash of the MsgEthereumTx.Data
 	wrapperTx, ok := tx.(protoTxProvider)
@@ -193,7 +186,7 @@ func (vbd EthValidateBasicDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		txFee = txFee.Add(sdk.Coin{Denom: evmDenom, Amount: sdkmath.NewIntFromBigInt(txData.Fee())})
 	}
 
-	if !authInfo.Fee.Amount.IsEqual(txFee) {
+	if !authInfo.Fee.Amount.Equal(txFee) {
 		return ctx, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid AuthInfo Fee Amount (%s != %s)", authInfo.Fee.Amount, txFee)
 	}
 

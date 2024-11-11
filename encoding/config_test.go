@@ -10,13 +10,13 @@ import (
 
 	"github.com/evmos/ethermint/app"
 	"github.com/evmos/ethermint/encoding"
-	"github.com/evmos/ethermint/tests"
+	utiltx "github.com/evmos/ethermint/testutil/tx"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
 func TestTxEncoding(t *testing.T) {
-	addr, key := tests.NewAddrKey()
-	signer := tests.NewSigner(key)
+	addr, key := utiltx.NewAddrKey()
+	signer := utiltx.NewSigner(key)
 
 	msg := evmtypes.NewTxContract(big.NewInt(1), 1, big.NewInt(10), 100000, nil, big.NewInt(1), big.NewInt(1), []byte{}, nil)
 	msg.From = addr.Hex()
