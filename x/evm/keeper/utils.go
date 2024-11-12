@@ -43,9 +43,13 @@ func (k Keeper) GetCoinbaseAddress(ctx sdk.Context, proposerAddress sdk.ConsAddr
 			err.Error(),
 		)
 	}
+	
+	address,err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+	if err != nil {
+		return common.Address{}, errorsmod.Wrapf(err, "failed to convert operator address %s", validator.GetOperator())
+	}
 
-	coinbase := common.BytesToAddress([]byte(validator.GetOperator()))
-	return coinbase, nil
+	return common.BytesToAddress(address), nil
 }
 
 // GetProposerAddress returns current block proposer's address when provided proposer address is empty.

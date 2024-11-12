@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/simapp"
-	tmjson "github.com/cometbft/cometbft/libs/json"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -93,22 +92,21 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (suite *KeeperTestSuite) SetupTest() {
 	checkTx := false
-	suite.app = app.Setup(checkTx, nil)
-	suite.SetupApp(checkTx)
+	// suite.app = app.Setup(checkTx, nil)
+	suite.SetupAppWithT(checkTx, suite.T())
 }
 
 func (suite *KeeperTestSuite) SetupTestWithT(t require.TestingT) {
 	checkTx := false
-	suite.app = app.Setup(checkTx, nil)
 	suite.SetupAppWithT(checkTx, t)
 }
 
-func (suite *KeeperTestSuite) SetupApp(checkTx bool) {
-	suite.SetupAppWithT(checkTx, suite.T())
-}
+// func (suite *KeeperTestSuite) SetupApp(checkTx bool) {
+// 	suite.SetupAppWithT(checkTx, suite.T())
+// }
 
 // SetupApp setup test environment, it uses`require.TestingT` to support both `testing.T` and `testing.B`.
-func (suite *KeeperTestSuite) SetupAppWithT(checkTx bool, t require.TestingT) {
+func (suite *KeeperTestSuite) SetupAppWithT(checkTx bool, t require.TestingT, baseAppOptions ...func(*baseapp.BaseApp)) {
 	// account key, use a constant account to keep unit test deterministic.
 	ecdsaPriv, err := crypto.HexToECDSA("b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291")
 	require.NoError(t, err)
@@ -143,40 +141,26 @@ func (suite *KeeperTestSuite) SetupAppWithT(checkTx bool, t require.TestingT) {
 			evmGenesis.Params.ChainConfig.CancunBlock = &maxInt
 			genesis[types.ModuleName] = app.AppCodec().MustMarshalJSON(evmGenesis)
 		}
-		return genesis
-	})
 
-	if suite.mintFeeCollector {
-		// mint some coin to fee collector
-		coins := sdk.NewCoins(sdk.NewCoin(types.DefaultEVMDenom, sdkmath.NewInt(int64(params.TxGas)-1)))
-		genesisState := app.NewTestGenesisState(suite.app.AppCodec())
-		balances := []banktypes.Balance{
-			{
-				Address: suite.app.AccountKeeper.GetModuleAddress(authtypes.FeeCollectorName).String(),
-				Coins:   coins,
-			},
+		if suite.mintFeeCollector {
+			// mint some coin to fee collector
+			coins := sdk.NewCoins(sdk.NewCoin(types.DefaultEVMDenom, sdkmath.NewInt(int64(params.TxGas)-1)))
+			balances := []banktypes.Balance{
+				{
+					Address: suite.app.AccountKeeper.GetModuleAddress(authtypes.FeeCollectorName).String(),
+					Coins:   coins,
+				},
+			}
+			var bankGenesis banktypes.GenesisState
+			suite.app.AppCodec().MustUnmarshalJSON(genesis[banktypes.ModuleName], &bankGenesis)
+			// Update balances and total supply
+			bankGenesis.Balances = append(bankGenesis.Balances, balances...)
+			bankGenesis.Supply = bankGenesis.Supply.Add(coins...)
+			genesis[banktypes.ModuleName] = suite.app.AppCodec().MustMarshalJSON(&bankGenesis)
 		}
-		var bankGenesis banktypes.GenesisState
-		suite.app.AppCodec().MustUnmarshalJSON(genesisState[banktypes.ModuleName], &bankGenesis)
-		// Update balances and total supply
-		bankGenesis.Balances = append(bankGenesis.Balances, balances...)
-		bankGenesis.Supply = bankGenesis.Supply.Add(coins...)
-		genesisState[banktypes.ModuleName] = suite.app.AppCodec().MustMarshalJSON(&bankGenesis)
 
-		// we marshal the genesisState of all module to a byte array
-		stateBytes, err := tmjson.MarshalIndent(genesisState, "", " ")
-		require.NoError(t, err)
-
-		// Initialize the chain
-		suite.app.InitChain(
-			&abci.RequestInitChain{
-				ChainId:         "ethermint_9000-1",
-				Validators:      []abci.ValidatorUpdate{},
-				ConsensusParams: app.DefaultConsensusParams,
-				AppStateBytes:   stateBytes,
-			},
-		)
-	}
+		return genesis
+	}, baseAppOptions...)
 
 	suite.ctx = suite.app.BaseApp.NewContextLegacy(checkTx, tmproto.Header{
 		Height:          1,
@@ -206,8 +190,11 @@ func (suite *KeeperTestSuite) SetupAppWithT(checkTx bool, t require.TestingT) {
 	types.RegisterQueryServer(queryHelper, suite.app.EvmKeeper)
 	suite.queryClient = types.NewQueryClient(queryHelper)
 
+	accountNumber, err := suite.app.AccountKeeper.AccountNumber.Next(suite.ctx)
+	require.NoError(t, err)
+
 	acc := &ethermint.EthAccount{
-		BaseAccount: authtypes.NewBaseAccount(sdk.AccAddress(suite.address.Bytes()), nil, 0, 0),
+		BaseAccount: authtypes.NewBaseAccount(sdk.AccAddress(suite.address.Bytes()), nil, accountNumber, 0),
 		CodeHash:    common.BytesToHash(crypto.Keccak256(nil)).String(),
 	}
 
@@ -222,7 +209,7 @@ func (suite *KeeperTestSuite) SetupAppWithT(checkTx bool, t require.TestingT) {
 	require.NoError(t, err)
 	suite.app.StakingKeeper.SetValidator(suite.ctx, validator)
 
-	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
+	encodingConfig := encoding.MakeTestConfig(app.ModuleBasics)
 	suite.clientCtx = client.Context{}.WithTxConfig(encodingConfig.TxConfig)
 	suite.ethSigner = ethtypes.LatestSignerForChainID(suite.app.EvmKeeper.ChainID())
 	suite.appCodec = encodingConfig.Codec
@@ -237,20 +224,20 @@ func (suite *KeeperTestSuite) EvmDenom() string {
 
 // Commit and begin new block
 func (suite *KeeperTestSuite) Commit() {
-	_,err := suite.app.Commit()
-	suite.Require().NoError(err)
+	// _,err := suite.app.Commit()
+	// suite.Require().NoError(err)
 
 	header := suite.ctx.BlockHeader()
-	_,err = suite.app.FinalizeBlock(&abci.RequestFinalizeBlock{
-		Height:  header.Height,
+	_, err := suite.app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: header.Height,
 	})
 	suite.Require().NoError(err)
 
 	_, err = suite.app.Commit()
 	require.NoError(suite.T(), err)
 
-	header.Height ++
-	_,err =suite.app.PrepareProposal(&abci.RequestPrepareProposal{
+	header.Height++
+	_, err = suite.app.PrepareProposal(&abci.RequestPrepareProposal{
 		Time:               header.Time,
 		Height:             header.Height,
 		ProposerAddress:    header.ProposerAddress,

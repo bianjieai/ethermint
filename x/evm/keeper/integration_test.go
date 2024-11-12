@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"encoding/json"
 	"math/big"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/ethereum/go-ethereum/common"
@@ -21,10 +19,8 @@ import (
 	utiltx "github.com/evmos/ethermint/testutil/tx"
 	"github.com/evmos/ethermint/x/feemarket/types"
 
-	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	dbm "github.com/cosmos/cosmos-db"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
@@ -134,7 +130,7 @@ func setupTestWithContext(valMinGasPrice string, minGasPrice math.LegacyDec, bas
 	privKey, msg := setupTest(valMinGasPrice + s.denom)
 	params := types.DefaultParams()
 	params.MinGasPrice = minGasPrice
-	s.app.FeeMarketKeeper.SetParams(s.ctx, params)
+	s.NoError(s.app.FeeMarketKeeper.SetParams(s.ctx, params), "setting params should succeed")
 	s.app.FeeMarketKeeper.SetBaseFee(s.ctx, baseFee.BigInt())
 	s.Commit()
 
@@ -142,7 +138,7 @@ func setupTestWithContext(valMinGasPrice string, minGasPrice math.LegacyDec, bas
 }
 
 func setupTest(localMinGasPrices string) (*ethsecp256k1.PrivKey, banktypes.MsgSend) {
-	setupChain(localMinGasPrices)
+	s.SetupAppWithT(false,s.T(),baseapp.SetMinGasPrices(localMinGasPrices))
 
 	privKey, address := generateKey()
 	amount, ok := math.NewIntFromString("10000000000000000000")
@@ -151,7 +147,7 @@ func setupTest(localMinGasPrices string) (*ethsecp256k1.PrivKey, banktypes.MsgSe
 		Denom:  s.denom,
 		Amount: amount,
 	}}
-	testutil.FundAccount(s.app.BankKeeper, s.ctx, address, initBalance)
+	s.Require().NoError(testutil.FundAccount(s.app.BankKeeper, s.ctx, address, initBalance), "failed to fund account")
 
 	msg := banktypes.MsgSend{
 		FromAddress: address.String(),
@@ -162,44 +158,8 @@ func setupTest(localMinGasPrices string) (*ethsecp256k1.PrivKey, banktypes.MsgSe
 		}},
 	}
 	s.Commit()
+	s.denom = evmtypes.DefaultEVMDenom
 	return privKey, msg
-}
-
-func setupChain(localMinGasPricesStr string) {
-	// Initialize the app, so we can use SetMinGasPrices to set the
-	// validator-specific min-gas-prices setting
-	db := dbm.NewMemDB()
-	newapp := app.NewEthermintApp(
-		log.NewNopLogger(),
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		app.DefaultNodeHome,
-		simtestutil.EmptyAppOptions{},
-		baseapp.SetMinGasPrices(localMinGasPricesStr),
-		// NOTE: added as init examines the chain id
-		baseapp.SetChainID("ethermint_9000-1"),
-	)
-
-	genesisState := app.NewTestGenesisState(newapp.AppCodec())
-	genesisState[types.ModuleName] = newapp.AppCodec().MustMarshalJSON(types.DefaultGenesisState())
-
-	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
-	s.Require().NoError(err)
-
-	// Initialize the chain
-	newapp.InitChain(
-		&abci.RequestInitChain{
-			ChainId:         "ethermint_9000-1",
-			Validators:      []abci.ValidatorUpdate{},
-			AppStateBytes:   stateBytes,
-			ConsensusParams: app.DefaultConsensusParams,
-		},
-	)
-
-	s.app = newapp
-	s.SetupApp(false)
 }
 
 func generateKey() (*ethsecp256k1.PrivKey, sdk.AccAddress) {
@@ -244,7 +204,7 @@ func buildEthTx(
 }
 
 func prepareEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) []byte {
-	encodingConfig := encoding.MakeConfig(app.ModuleBasics)
+	encodingConfig := encoding.MakeTestConfig(app.ModuleBasics)
 	option, err := codectypes.NewAnyWithValue(&evmtypes.ExtensionOptionsEthereumTx{})
 	s.Require().NoError(err)
 

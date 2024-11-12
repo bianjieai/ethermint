@@ -221,7 +221,13 @@ func (suite *KeeperTestSuite) TestSetNonce() {
 
 func (suite *KeeperTestSuite) TestGetCodeHash() {
 	addr := utiltx.GenerateAddress()
-	baseAcc := &authtypes.BaseAccount{Address: sdk.AccAddress(addr.Bytes()).String()}
+	accountNumber, err := suite.app.AccountKeeper.AccountNumber.Next(suite.ctx)
+	suite.NoError(err)
+
+	baseAcc := &authtypes.BaseAccount{
+		Address: sdk.AccAddress(addr.Bytes()).String(),
+		AccountNumber: accountNumber,
+	}
 	suite.app.AccountKeeper.SetAccount(suite.ctx, baseAcc)
 
 	testCases := []struct {
@@ -266,7 +272,7 @@ func (suite *KeeperTestSuite) TestGetCodeHash() {
 func (suite *KeeperTestSuite) TestSetCode() {
 	addr := utiltx.GenerateAddress()
 	baseAcc := &authtypes.BaseAccount{Address: sdk.AccAddress(addr.Bytes()).String()}
-	suite.app.AccountKeeper.SetAccount(suite.ctx, baseAcc)
+	suite.app.AccountKeeper.NewAccount(suite.ctx, baseAcc)
 
 	testCases := []struct {
 		name    string
@@ -321,7 +327,7 @@ func (suite *KeeperTestSuite) TestSetCode() {
 func (suite *KeeperTestSuite) TestKeeperSetCode() {
 	addr := utiltx.GenerateAddress()
 	baseAcc := &authtypes.BaseAccount{Address: sdk.AccAddress(addr.Bytes()).String()}
-	suite.app.AccountKeeper.SetAccount(suite.ctx, baseAcc)
+	suite.app.AccountKeeper.NewAccount(suite.ctx, baseAcc)
 
 	testCases := []struct {
 		name     string
