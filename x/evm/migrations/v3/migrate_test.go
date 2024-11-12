@@ -20,7 +20,7 @@ import (
 )
 
 func TestMigrateStore(t *testing.T) {
-	encCfg := encoding.MakeConfig(app.ModuleBasics)
+	encCfg := encoding.MakeTestConfig(app.ModuleBasics)
 	evmKey := storetypes.NewKVStoreKey(types.StoreKey)
 	tEvmKey := storetypes.NewTransientStoreKey(fmt.Sprintf("%s_test", types.StoreKey))
 	ctx := testutil.DefaultContext(evmKey, tEvmKey)

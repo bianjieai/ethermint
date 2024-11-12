@@ -15,7 +15,7 @@ func BenchmarkEthermintApp_ExportAppStateAndValidators(b *testing.B) {
 	db := dbm.NewMemDB()
 	app := NewEthermintApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, simtestutil.EmptyAppOptions{})
 
-	genesisState := NewTestGenesisState(app.AppCodec())
+	genesisState := NewTestGenesisState(app)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
 	if err != nil {
 		b.Fatal(err)

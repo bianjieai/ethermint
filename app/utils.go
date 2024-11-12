@@ -61,12 +61,25 @@ var DefaultConsensusParams = &types1.ConsensusParams{
 }
 
 // Setup initializes a new EthermintApp. A Nop logger is set in EthermintApp.
-func Setup(isCheckTx bool, patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState) *EthermintApp {
-	return SetupWithDB(isCheckTx, patchGenesis, dbm.NewMemDB())
+func Setup(
+	isCheckTx bool,
+	patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState,
+	baseAppOptions ...func(*baseapp.BaseApp),
+) *EthermintApp {
+	return SetupWithDB(isCheckTx, patchGenesis, dbm.NewMemDB(), baseAppOptions...)
 }
 
 // SetupWithDB initializes a new EthermintApp. A Nop logger is set in EthermintApp.
-func SetupWithDB(isCheckTx bool, patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState, db dbm.DB) *EthermintApp {
+func SetupWithDB(
+	isCheckTx bool,
+	patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState,
+	db dbm.DB,
+	baseAppOptions ...func(*baseapp.BaseApp),
+) *EthermintApp {
+	if baseAppOptions == nil {
+		baseAppOptions = []func(*baseapp.BaseApp){}
+	}
+	baseAppOptions = append(baseAppOptions, baseapp.SetChainID("ethermint_9000-1"))
 	// setup chain id
 	app := NewEthermintApp(log.NewNopLogger(),
 		db,
@@ -75,11 +88,12 @@ func SetupWithDB(isCheckTx bool, patchGenesis func(*EthermintApp, simapp.Genesis
 		map[int64]bool{},
 		DefaultNodeHome,
 		simtestutil.EmptyAppOptions{},
-		// NOTE: added as init examines the chain id
-		baseapp.SetChainID("ethermint_9000-1"))
+		baseAppOptions...,
+	// NOTE: added as init examines the chain id
+	)
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
-		genesisState := NewTestGenesisState(app.AppCodec())
+		genesisState := NewTestGenesisState(app)
 		if patchGenesis != nil {
 			genesisState = patchGenesis(app, genesisState)
 		}
@@ -90,21 +104,23 @@ func SetupWithDB(isCheckTx bool, patchGenesis func(*EthermintApp, simapp.Genesis
 		}
 
 		// Initialize the chain
-		app.InitChain(
+		if _, err := app.InitChain(
 			&abci.RequestInitChain{
 				ChainId:         "ethermint_9000-1",
 				Validators:      []abci.ValidatorUpdate{},
 				ConsensusParams: DefaultConsensusParams,
 				AppStateBytes:   stateBytes,
 			},
-		)
+		); err != nil {
+			panic(err)
+		}
 	}
 
 	return app
 }
 
 // NewTestGenesisState generate genesis state with single validator
-func NewTestGenesisState(codec codec.Codec) simapp.GenesisState {
+func NewTestGenesisState(app *EthermintApp) simapp.GenesisState {
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	if err != nil {
@@ -122,8 +138,8 @@ func NewTestGenesisState(codec codec.Codec) simapp.GenesisState {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100000000000000))),
 	}
 
-	genesisState := NewDefaultGenesisState()
-	return genesisStateWithValSet(codec, genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
+	genesisState := app.DefaultGenesis()
+	return genesisStateWithValSet(app.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 }
 
 func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
@@ -162,7 +178,7 @@ func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
 			MinSelfDelegation: math.ZeroInt(),
 		}
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), val.Address.String(), math.LegacyOneDec()))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), validator.OperatorAddress, math.LegacyOneDec()))
 	}
 	// set validators and delegations
 	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)

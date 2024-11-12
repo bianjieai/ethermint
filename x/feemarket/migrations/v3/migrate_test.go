@@ -26,7 +26,7 @@ func init() {
 }
 
 func TestMigrateStore(t *testing.T) {
-	encCfg := encoding.MakeConfig(app.ModuleBasics)
+	encCfg := encoding.MakeTestConfig(app.ModuleBasics)
 	feemarketKey := storetypes.NewKVStoreKey(feemarkettypes.StoreKey)
 	tFeeMarketKey := storetypes.NewTransientStoreKey(fmt.Sprintf("%s_test", feemarkettypes.StoreKey))
 	ctx := testutil.DefaultContext(feemarketKey, tFeeMarketKey)
@@ -77,7 +77,7 @@ func TestMigrateJSON(t *testing.T) {
 			"no_base_fee": false
 		}
   }`
-	encCfg := encoding.MakeConfig(app.ModuleBasics)
+	encCfg := encoding.MakeTestConfig(app.ModuleBasics)
 	var genState v2types.GenesisState
 	err := encCfg.Codec.UnmarshalJSON([]byte(rawJson), &genState)
 	require.NoError(t, err)
