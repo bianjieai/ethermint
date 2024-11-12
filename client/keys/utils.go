@@ -27,7 +27,6 @@ import (
 	cryptokeyring "github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
-
 type bechKeyOutFn func(k *cryptokeyring.Record) (keys.KeyOutput, error)
 
 func printKeyringRecord(w io.Writer, k *cryptokeyring.Record, bechKeyOut bechKeyOutFn, output string) error {

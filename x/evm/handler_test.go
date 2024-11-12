@@ -269,7 +269,6 @@ func (suite *EvmTestSuite) TestHandlerLogs() {
 	result, err := suite.app.EvmKeeper.EthereumTx(suite.ctx, tx)
 	suite.Require().NoError(err, "failed to handle eth tx msg")
 
-
 	suite.Require().Equal(len(result.Logs), 1)
 	suite.Require().Equal(len(result.Logs[0].Topics), 2)
 }

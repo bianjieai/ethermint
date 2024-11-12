@@ -76,7 +76,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.SetupApp(checkTx)
 }
 
-func (suite *KeeperTestSuite) SetupApp(checkTx bool,baseAppOptions ...func(*baseapp.BaseApp)) {
+func (suite *KeeperTestSuite) SetupApp(checkTx bool, baseAppOptions ...func(*baseapp.BaseApp)) {
 	t := suite.T()
 	// account key
 	priv, err := ethsecp256k1.GenerateKey()
@@ -153,12 +153,12 @@ func (suite *KeeperTestSuite) Commit() {
 // Commit commits a block at a given time.
 func (suite *KeeperTestSuite) CommitAfter(t time.Duration) {
 	header := suite.ctx.BlockHeader()
-	_,err := suite.app.FinalizeBlock(&abci.RequestFinalizeBlock{
-		Height:  header.Height,
+	_, err := suite.app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: header.Height,
 	})
 	suite.Require().NoError(err)
 
-	_,err = suite.app.Commit()
+	_, err = suite.app.Commit()
 	suite.Require().NoError(err)
 
 	header.Height++

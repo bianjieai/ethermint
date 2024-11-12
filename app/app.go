@@ -165,10 +165,10 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic([]govclient.ProposalHandler{
 			// TODO
-			paramsclient.ProposalHandler, 
-			// upgradeclient.LegacyProposalHandler, 
+			paramsclient.ProposalHandler,
+			// upgradeclient.LegacyProposalHandler,
 			// upgradeclient.LegacyCancelProposalHandler,
-			// ibcclientclient.UpdateClientProposalHandler, 
+			// ibcclientclient.UpdateClientProposalHandler,
 			// ibcclientclient.UpgradeProposalHandler,
 		}),
 		params.AppModuleBasic{},
@@ -252,7 +252,7 @@ type EthermintApp struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// the module manager
-	mm *module.Manager
+	mm                 *module.Manager
 	BasicModuleManager module.BasicManager
 
 	// the configurator
@@ -330,8 +330,8 @@ func NewEthermintApp(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 	// set the BaseApp's parameter store
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
-		appCodec, 
-		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), 
+		appCodec,
+		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		runtime.EventService{},
 	)
@@ -349,7 +349,7 @@ func NewEthermintApp(
 
 	// use custom Ethermint account for contracts
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
-		appCodec, 
+		appCodec,
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		ethermint.ProtoAccount,
 		maccPerms,
@@ -382,7 +382,7 @@ func NewEthermintApp(
 	app.txConfig = txConfig
 
 	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, 
+		appCodec,
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -465,27 +465,27 @@ func NewEthermintApp(
 	// Set authority to x/gov module account to only expect the module account to update params
 	evmSs := app.GetSubspace(evmtypes.ModuleName)
 	app.EvmKeeper = evmkeeper.NewKeeper(
-		appCodec, 
-		keys[evmtypes.StoreKey], 
-		tkeys[evmtypes.TransientKey], 
+		appCodec,
+		keys[evmtypes.StoreKey],
+		tkeys[evmtypes.TransientKey],
 		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, 
-		app.BankKeeper, 
-		app.StakingKeeper, 
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
 		app.FeeMarketKeeper,
-		nil, 
-		geth.NewEVM, 
-		tracer, 
+		nil,
+		geth.NewEVM,
+		tracer,
 		evmSs,
 	)
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, 
-		keys[ibcexported.StoreKey], 
-		app.GetSubspace(ibcexported.ModuleName), 
-		app.StakingKeeper, 
-		app.UpgradeKeeper, 
+		appCodec,
+		keys[ibcexported.StoreKey],
+		app.GetSubspace(ibcexported.ModuleName),
+		app.StakingKeeper,
+		app.UpgradeKeeper,
 		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -500,14 +500,14 @@ func NewEthermintApp(
 		govConfig.MaxMetadataLen = 10000
 	*/
 	govKeeper := govkeeper.NewKeeper(
-		appCodec, 
-		runtime.NewKVStoreService(keys[govtypes.StoreKey]), 
-		app.AccountKeeper, 
+		appCodec,
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
+		app.AccountKeeper,
 		app.BankKeeper,
-		app.StakingKeeper, 
-		app.DistrKeeper, 
-		app.MsgServiceRouter(), 
-		govConfig, 
+		app.StakingKeeper,
+		app.DistrKeeper,
+		app.MsgServiceRouter(),
+		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -522,14 +522,14 @@ func NewEthermintApp(
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec, 
-		keys[ibctransfertypes.StoreKey], 
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, 
-		app.IBCKeeper.ChannelKeeper, 
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, 
-		app.BankKeeper, 
+		app.AccountKeeper,
+		app.BankKeeper,
 		scopedTransferKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -543,9 +543,9 @@ func NewEthermintApp(
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
-		appCodec, 
+		appCodec,
 		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
-		app.StakingKeeper, 
+		app.StakingKeeper,
 		app.SlashingKeeper,
 		app.AccountKeeper.AddressCodec(),
 		runtime.ProvideCometInfoService(),
@@ -560,8 +560,8 @@ func NewEthermintApp(
 	app.mm = module.NewManager(
 		// SDK app modules
 		genutil.NewAppModule(
-			app.AccountKeeper, 
-			app.StakingKeeper, 
+			app.AccountKeeper,
+			app.StakingKeeper,
 			app,
 			encodingConfig.TxConfig,
 		),
@@ -573,7 +573,7 @@ func NewEthermintApp(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(authtypes.ModuleName)),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(authtypes.ModuleName)),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(authtypes.ModuleName),interfaceRegistry),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(authtypes.ModuleName), interfaceRegistry),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(authtypes.ModuleName)),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(authtypes.ModuleName)),
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
@@ -928,7 +928,7 @@ func (app *EthermintApp) RegisterTendermintService(clientCtx client.Context) {
 // RegisterNodeService registers the node gRPC service on the provided
 // application gRPC query router.
 func (app *EthermintApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
-	node.RegisterNodeService(clientCtx, app.GRPCQueryRouter(),cfg)
+	node.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.

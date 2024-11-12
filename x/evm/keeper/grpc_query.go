@@ -123,7 +123,7 @@ func (k Keeper) ValidatorAccount(c context.Context, req *types.QueryValidatorAcc
 		return nil, fmt.Errorf("error while getting validator %s. %w", consAddr.String(), err)
 	}
 
-	accAddr,err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+	accAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
 	if err != nil {
 		return nil, err
 	}

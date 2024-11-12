@@ -132,7 +132,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // WithOptions sets the options to the keeper
-func (k *Keeper) WithOptions(opts types.Options) *Keeper{
+func (k *Keeper) WithOptions(opts types.Options) *Keeper {
 	k.opts = opts
 	return k
 }
@@ -271,7 +271,7 @@ func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
 }
 
 // Hooks return the hooks
-func (k *Keeper) Hooks() types.EvmHooks{
+func (k *Keeper) Hooks() types.EvmHooks {
 	return k.hooks
 }
 

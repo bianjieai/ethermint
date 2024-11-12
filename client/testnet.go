@@ -352,7 +352,7 @@ func initTestnetFiles(
 			WithKeybase(kb).
 			WithTxConfig(clientCtx.TxConfig)
 
-		if err := tx.Sign(context.Background(),txFactory, nodeDirName, txBuilder, true); err != nil {
+		if err := tx.Sign(context.Background(), txFactory, nodeDirName, txBuilder, true); err != nil {
 			return err
 		}
 
@@ -495,8 +495,8 @@ func collectGenFiles(
 		}
 
 		nodeAppState, err := genutil.GenAppStateFromConfig(
-			clientCtx.Codec, clientCtx.TxConfig, 
-			nodeConfig, initCfg, appGenesis, genBalIterator, 
+			clientCtx.Codec, clientCtx.TxConfig,
+			nodeConfig, initCfg, appGenesis, genBalIterator,
 			gtypes.DefaultMessageValidator,
 			clientCtx.TxConfig.SigningContext().ValidatorAddressCodec(),
 		)

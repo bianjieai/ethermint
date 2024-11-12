@@ -30,8 +30,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	tmcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	tmlog "cosmossdk.io/log"
+	tmcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	rpcclient "github.com/cometbft/cometbft/rpc/jsonrpc/client"
 )
 

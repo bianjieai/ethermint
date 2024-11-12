@@ -18,7 +18,7 @@ import (
 // App Wiring Setup
 func init() {
 	appmodule.Register(&modulev1.Module{},
-		appmodule.Provide(ProvideModule,ProvideKeyTable),
+		appmodule.Provide(ProvideModule, ProvideKeyTable),
 		appmodule.Invoke(InvokeHooks),
 	)
 }
@@ -65,7 +65,7 @@ type Inputs struct {
 type HookInputs struct {
 	depinject.In
 
-	Hooks []types.EvmHooks `optional:"true"`
+	Hooks  []types.EvmHooks `optional:"true"`
 	Keeper *keeper.Keeper
 }
 

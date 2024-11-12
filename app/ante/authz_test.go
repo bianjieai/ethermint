@@ -342,7 +342,7 @@ func (suite *AnteTestSuite) TestRejectDeliverMsgsInAuthz() {
 			bz, err := txEncoder(tx)
 			suite.Require().NoError(err)
 
-			resCheckTx,err := suite.app.CheckTx(
+			resCheckTx, err := suite.app.CheckTx(
 				&abci.RequestCheckTx{
 					Tx:   bz,
 					Type: abci.CheckTxType_New,
@@ -351,9 +351,9 @@ func (suite *AnteTestSuite) TestRejectDeliverMsgsInAuthz() {
 			suite.Require().NoError(err)
 			suite.Require().Equal(resCheckTx.Code, tc.expectedCode, resCheckTx.Log)
 
-			resDeliverTx,err := suite.app.FinalizeBlock(
+			resDeliverTx, err := suite.app.FinalizeBlock(
 				&abci.RequestFinalizeBlock{
-					Txs: [][]byte{bz},
+					Txs:    [][]byte{bz},
 					Height: suite.ctx.BlockHeight(),
 				},
 			)

@@ -90,7 +90,7 @@ type AppConstructor = func(val Validator) servertypes.Application
 func NewAppConstructor(encodingCfg sdktestutil.TestEncodingConfig) AppConstructor {
 	return func(val Validator) servertypes.Application {
 		return app.NewEthermintApp(
-			val.Ctx.Logger, dbm.NewMemDB(), nil, true, make(map[int64]bool), 
+			val.Ctx.Logger, dbm.NewMemDB(), nil, true, make(map[int64]bool),
 			val.Ctx.Config.RootDir,
 			simtestutil.EmptyAppOptions{},
 			baseapp.SetPruning(pruningtypes.NewPruningOptionsFromString(val.AppConfig.Pruning)),

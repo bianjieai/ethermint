@@ -40,7 +40,7 @@ type HandlerOptions struct {
 	FeeMarketKeeper        FeeMarketKeeper
 	EvmKeeper              EVMKeeper
 	FeegrantKeeper         ante.FeegrantKeeper
-	SignModeHandler         *txsigning.HandlerMap
+	SignModeHandler        *txsigning.HandlerMap
 	SigGasConsumer         func(meter storetypes.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	MaxTxGasWanted         uint64
 	ExtensionOptionChecker ante.ExtensionOptionChecker

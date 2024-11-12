@@ -225,7 +225,7 @@ func (suite *KeeperTestSuite) TestGetCodeHash() {
 	suite.NoError(err)
 
 	baseAcc := &authtypes.BaseAccount{
-		Address: sdk.AccAddress(addr.Bytes()).String(),
+		Address:       sdk.AccAddress(addr.Bytes()).String(),
 		AccountNumber: accountNumber,
 	}
 	suite.app.AccountKeeper.SetAccount(suite.ctx, baseAcc)

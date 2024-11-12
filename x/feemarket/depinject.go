@@ -17,7 +17,7 @@ import (
 // App Wiring Setup
 func init() {
 	appmodule.Register(&modulev1.Module{},
-		appmodule.Provide(ProvideModule,ProvideKeyTable),
+		appmodule.Provide(ProvideModule, ProvideKeyTable),
 	)
 }
 
@@ -44,13 +44,13 @@ func (am AppModule) IsAppModule() {}
 type Inputs struct {
 	depinject.In
 
-	StoreKey        *store.KVStoreKey
-	Cdc             codec.Codec
-	TransientKey    *store.TransientStoreKey
-	Config          *modulev1.Module
-	
+	StoreKey     *store.KVStoreKey
+	Cdc          codec.Codec
+	TransientKey *store.TransientStoreKey
+	Config       *modulev1.Module
+
 	// LegacySubspace is used solely for migration of x/params managed parameters
-	LegacySubspace    paramstypes.Subspace     `optional:"true"`
+	LegacySubspace paramstypes.Subspace `optional:"true"`
 }
 
 // Outputs define the module outputs for the depinject.

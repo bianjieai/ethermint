@@ -43,8 +43,8 @@ func (k Keeper) GetCoinbaseAddress(ctx sdk.Context, proposerAddress sdk.ConsAddr
 			err.Error(),
 		)
 	}
-	
-	address,err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+
+	address, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
 	if err != nil {
 		return common.Address{}, errorsmod.Wrapf(err, "failed to convert operator address %s", validator.GetOperator())
 	}

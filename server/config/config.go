@@ -35,7 +35,7 @@ const (
 	// ServerStartTime defines the time duration that the server need to stay running after startup
 	// for the startup be considered successful
 	ServerStartTime = 5 * time.Second
-	
+
 	// DefaultGRPCAddress is the default address the gRPC server binds to.
 	DefaultGRPCAddress = "0.0.0.0:9900"
 

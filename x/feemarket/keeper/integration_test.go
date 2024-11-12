@@ -468,7 +468,6 @@ func setupTest(localMinGasPrices string) (*ethsecp256k1.PrivKey, banktypes.MsgSe
 	}}
 	s.Require().NoError(testutil.FundAccount(s.app.BankKeeper, s.ctx, address, initBalance), "failed to fund account")
 
-
 	msg := banktypes.MsgSend{
 		FromAddress: address.String(),
 		ToAddress:   address.String(),
@@ -557,7 +556,7 @@ func prepareEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereu
 func checkEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) *abci.ResponseCheckTx {
 	bz := prepareEthTx(priv, msgEthereumTx)
 	req := &abci.RequestCheckTx{Tx: bz}
-	res,err := s.app.BaseApp.CheckTx(req)
+	res, err := s.app.BaseApp.CheckTx(req)
 	s.Require().NoError(err)
 	return res
 }
@@ -647,7 +646,7 @@ func prepareCosmosTx(priv *ethsecp256k1.PrivKey, gasPrice *sdkmath.Int, msgs ...
 func checkTx(priv *ethsecp256k1.PrivKey, gasPrice *sdkmath.Int, msgs ...sdk.Msg) *abci.ResponseCheckTx {
 	bz := prepareCosmosTx(priv, gasPrice, msgs...)
 	req := &abci.RequestCheckTx{Tx: bz}
-	res,err  := s.app.BaseApp.CheckTx(req)
+	res, err := s.app.BaseApp.CheckTx(req)
 	s.Require().NoError(err)
 	return res
 }

@@ -40,7 +40,7 @@ func NewDefaultGenesisState() simapp.GenesisState {
 // ExportAppStateAndValidators exports the state of the application for a genesis
 // file.
 func (app *EthermintApp) ExportAppStateAndValidators(
-	forZeroHeight bool, 
+	forZeroHeight bool,
 	jailAllowedAddrs []string,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
@@ -58,7 +58,7 @@ func (app *EthermintApp) ExportAppStateAndValidators(
 		}
 	}
 
-	genState,err := app.mm.ExportGenesisForModules(ctx, app.appCodec,modulesToExport)
+	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -121,7 +121,7 @@ func (app *EthermintApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAd
 	})
 
 	// withdraw all delegator rewards
-	dels,err := app.StakingKeeper.GetAllDelegations(ctx)
+	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
 	if err != nil {
 		panic(err)
 	}

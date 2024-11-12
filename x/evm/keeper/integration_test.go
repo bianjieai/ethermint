@@ -138,7 +138,7 @@ func setupTestWithContext(valMinGasPrice string, minGasPrice math.LegacyDec, bas
 }
 
 func setupTest(localMinGasPrices string) (*ethsecp256k1.PrivKey, banktypes.MsgSend) {
-	s.SetupAppWithT(false,s.T(),baseapp.SetMinGasPrices(localMinGasPrices))
+	s.SetupAppWithT(false, s.T(), baseapp.SetMinGasPrices(localMinGasPrices))
 
 	privKey, address := generateKey()
 	amount, ok := math.NewIntFromString("10000000000000000000")
@@ -239,7 +239,7 @@ func prepareEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereu
 func checkEthTx(priv *ethsecp256k1.PrivKey, msgEthereumTx *evmtypes.MsgEthereumTx) *abci.ResponseCheckTx {
 	bz := prepareEthTx(priv, msgEthereumTx)
 	req := &abci.RequestCheckTx{Tx: bz}
-	res,err := s.app.BaseApp.CheckTx(req)
+	res, err := s.app.BaseApp.CheckTx(req)
 	if err != nil {
 		panic(err)
 	}

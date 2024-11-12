@@ -48,7 +48,7 @@ func (k *Keeper) RefundGas(ctx sdk.Context, msg core.Message, leftoverGas uint64
 	// Return EVM tokens for remaining gas, exchanged at the original rate.
 	remaining := new(big.Int).Mul(new(big.Int).SetUint64(leftoverGas), msg.GasPrice())
 	feePayer := msg.From().Bytes()
-	if m,ok := msg.(types.Message); ok {
+	if m, ok := msg.(types.Message); ok {
 		feePayer = common.HexToAddress(m.FeePayer).Bytes()
 	}
 

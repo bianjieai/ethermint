@@ -40,20 +40,20 @@ func (cc ChainConfig) EthereumConfig(chainID *big.Int) *params.ChainConfig {
 
 // DefaultChainConfig returns default evm parameters.
 func DefaultChainConfig() ChainConfig {
-	homesteadBlock :=math.ZeroInt()
-	daoForkBlock :=math.ZeroInt()
-	eip150Block :=math.ZeroInt()
-	eip155Block :=math.ZeroInt()
-	eip158Block :=math.ZeroInt()
-	byzantiumBlock :=math.ZeroInt()
-	constantinopleBlock :=math.ZeroInt()
-	petersburgBlock :=math.ZeroInt()
-	istanbulBlock :=math.ZeroInt()
-	muirGlacierBlock :=math.ZeroInt()
-	berlinBlock :=math.ZeroInt()
-	londonBlock :=math.ZeroInt()
-	arrowGlacierBlock :=math.ZeroInt()
-	mergeForkBlock :=math.ZeroInt()
+	homesteadBlock := math.ZeroInt()
+	daoForkBlock := math.ZeroInt()
+	eip150Block := math.ZeroInt()
+	eip155Block := math.ZeroInt()
+	eip158Block := math.ZeroInt()
+	byzantiumBlock := math.ZeroInt()
+	constantinopleBlock := math.ZeroInt()
+	petersburgBlock := math.ZeroInt()
+	istanbulBlock := math.ZeroInt()
+	muirGlacierBlock := math.ZeroInt()
+	berlinBlock := math.ZeroInt()
+	londonBlock := math.ZeroInt()
+	arrowGlacierBlock := math.ZeroInt()
+	mergeForkBlock := math.ZeroInt()
 
 	return ChainConfig{
 		HomesteadBlock:      &homesteadBlock,
