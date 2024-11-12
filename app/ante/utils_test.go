@@ -20,6 +20,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/evmos/ethermint/encoding"
 	"github.com/evmos/ethermint/ethereum/eip712"
 	"github.com/evmos/ethermint/testutil"
 	utiltx "github.com/evmos/ethermint/testutil/tx"
@@ -55,6 +56,7 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
@@ -115,6 +117,11 @@ func (suite *AnteTestSuite) SetupTest() {
 		return genesis
 	})
 
+	_, err = suite.app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height: 1,
+	})
+	suite.Require().NoError(err, "FinalizeBlock should not have an error")
+
 	suite.ctx = suite.app.BaseApp.NewContextLegacy(checkTx, tmproto.Header{Height: 2, ChainID: testutil.TestnetChainID + "-1", Time: time.Now().UTC()})
 	suite.ctx = suite.ctx.WithMinGasPrices(sdk.NewDecCoins(sdk.NewDecCoin(evmtypes.DefaultEVMDenom, sdkmath.OneInt())))
 	suite.ctx = suite.ctx.WithBlockGasMeter(storetypes.NewGasMeter(1000000000000000000))
@@ -127,10 +134,11 @@ func (suite *AnteTestSuite) SetupTest() {
 	acc := suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addr)
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
 
+	encodingConfig := encoding.MakeTestConfig(app.ModuleBasics)
 	// We're using TestMsg amino encoding in some tests, so register it here.
-	suite.app.LegacyAmino().RegisterConcrete(&testdata.TestMsg{}, "testdata.TestMsg", nil)
+	encodingConfig.Amino.RegisterConcrete(&testdata.TestMsg{}, "testdata.TestMsg", nil)
 
-	suite.clientCtx = client.Context{}.WithTxConfig(suite.app.TxConfig())
+	suite.clientCtx = client.Context{}.WithTxConfig(encodingConfig.TxConfig)
 
 	anteHandler, err := ante.NewAnteHandler(ante.HandlerOptions{
 		AccountKeeper:   suite.app.AccountKeeper,
@@ -139,7 +147,7 @@ func (suite *AnteTestSuite) SetupTest() {
 		FeegrantKeeper:  suite.app.FeeGrantKeeper,
 		IBCKeeper:       suite.app.IBCKeeper,
 		FeeMarketKeeper: suite.app.FeeMarketKeeper,
-		SignModeHandler: suite.app.TxConfig().SignModeHandler(),
+		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 		SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 		DisabledAuthzMsgs: []string{
 			sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),

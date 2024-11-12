@@ -291,12 +291,18 @@ func (suite *EIP712TestSuite) TestEIP712() {
 		{
 			title: "Fails - Single Message / Multi-Signer",
 			msgs: []sdk.Msg{
-				banktypes.NewMsgMultiSend(
-					banktypes.NewInput(
-						suite.createTestAddress(),
-						suite.makeCoins(suite.denom, math.NewInt(50)),
-					),
-					[]banktypes.Output{
+				&banktypes.MsgMultiSend{
+					Inputs: []banktypes.Input{
+						banktypes.NewInput(
+							suite.createTestAddress(),
+							suite.makeCoins(suite.denom, math.NewInt(50)),
+						),
+						banktypes.NewInput(
+							suite.createTestAddress(),
+							suite.makeCoins(suite.denom, math.NewInt(50)),
+						),
+					},
+					Outputs: []banktypes.Output{
 						banktypes.NewOutput(
 							suite.createTestAddress(),
 							suite.makeCoins(suite.denom, math.NewInt(50)),
@@ -306,7 +312,7 @@ func (suite *EIP712TestSuite) TestEIP712() {
 							suite.makeCoins(suite.denom, math.NewInt(50)),
 						),
 					},
-				),
+				},
 			},
 			expectSuccess: false,
 		},
@@ -448,17 +454,20 @@ func (suite *EIP712TestSuite) verifyPayloadMapAgainstFlattenedMap(original map[s
 	suite.Require().True(ok)
 
 	messages, ok := interfaceMessages.([]interface{})
-	suite.Require().True(ok)
+	// If passing an empty msgs array
+	// the interfaceMessages is nil
+	// in that case, don't try to iterate the messages
+	if ok {
+		// Verify message contents
+		for i, msg := range messages {
+			flattenedMsg, ok := flattened[fmt.Sprintf("msg%d", i)]
+			suite.Require().True(ok)
 
-	// Verify message contents
-	for i, msg := range messages {
-		flattenedMsg, ok := flattened[fmt.Sprintf("msg%d", i)]
-		suite.Require().True(ok)
+			flattenedMsgJSON, ok := flattenedMsg.(map[string]interface{})
+			suite.Require().True(ok)
 
-		flattenedMsgJSON, ok := flattenedMsg.(map[string]interface{})
-		suite.Require().True(ok)
-
-		suite.Require().Equal(flattenedMsgJSON, msg)
+			suite.Require().Equal(flattenedMsgJSON, msg)
+		}
 	}
 
 	// Verify new payload does not have msgs field

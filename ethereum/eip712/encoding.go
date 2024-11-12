@@ -19,14 +19,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	txTypes "github.com/cosmos/cosmos-sdk/types/tx"
+	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
+	"github.com/evmos/ethermint/types"
 
 	apitypes "github.com/ethereum/go-ethereum/signer/core/apitypes"
-	"github.com/evmos/ethermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 )

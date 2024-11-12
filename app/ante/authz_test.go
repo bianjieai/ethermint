@@ -351,21 +351,14 @@ func (suite *AnteTestSuite) TestRejectDeliverMsgsInAuthz() {
 			suite.Require().NoError(err)
 			suite.Require().Equal(resCheckTx.Code, tc.expectedCode, resCheckTx.Log)
 
-			header := suite.ctx.BlockHeader()
-			blockRes, err := suite.app.FinalizeBlock(
+			resDeliverTx,err := suite.app.FinalizeBlock(
 				&abci.RequestFinalizeBlock{
-					Height:             suite.ctx.BlockHeight() + 1,
-					Txs:                [][]byte{bz},
-					Hash:               header.AppHash,
-					NextValidatorsHash: header.NextValidatorsHash,
-					ProposerAddress:    header.ProposerAddress,
-					Time:               header.Time.Add(time.Second),
+					Txs: [][]byte{bz},
+					Height: suite.ctx.BlockHeight(),
 				},
 			)
 			suite.Require().NoError(err)
-			suite.Require().Len(blockRes.TxResults, 1)
-			txRes := blockRes.TxResults[0]
-			suite.Require().Equal(txRes.Code, tc.expectedCode, txRes.Log)
+			suite.Require().Equal(resDeliverTx.TxResults[0].Code, tc.expectedCode, resDeliverTx.TxResults[0].Log)
 		})
 	}
 }
