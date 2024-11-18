@@ -3,8 +3,8 @@ package evm
 import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/depinject"
+	store "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -18,7 +18,7 @@ import (
 // App Wiring Setup
 func init() {
 	appmodule.Register(&modulev1.Module{},
-		appmodule.Provide(ProvideModule,ProvideKeyTable),
+		appmodule.Provide(ProvideModule, ProvideKeyTable),
 		appmodule.Invoke(InvokeHooks),
 	)
 }
@@ -65,7 +65,7 @@ type Inputs struct {
 type HookInputs struct {
 	depinject.In
 
-	Hooks []types.EvmHooks `optional:"true"`
+	Hooks  []types.EvmHooks `optional:"true"`
 	Keeper *keeper.Keeper
 }
 

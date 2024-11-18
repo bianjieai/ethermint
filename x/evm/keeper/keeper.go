@@ -19,10 +19,11 @@ import (
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -131,7 +132,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // WithOptions sets the options to the keeper
-func (k *Keeper) WithOptions(opts types.Options) *Keeper{
+func (k *Keeper) WithOptions(opts types.Options) *Keeper {
 	k.opts = opts
 	return k
 }
@@ -270,7 +271,7 @@ func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
 }
 
 // Hooks return the hooks
-func (k *Keeper) Hooks() types.EvmHooks{
+func (k *Keeper) Hooks() types.EvmHooks {
 	return k.hooks
 }
 
@@ -367,11 +368,11 @@ func (k Keeper) getBaseFee(ctx sdk.Context, london bool) *big.Int {
 }
 
 // GetMinGasMultiplier returns the MinGasMultiplier param from the fee market module
-func (k Keeper) GetMinGasMultiplier(ctx sdk.Context) sdk.Dec {
+func (k Keeper) GetMinGasMultiplier(ctx sdk.Context) math.LegacyDec {
 	fmkParmas := k.feeMarketKeeper.GetParams(ctx)
 	if fmkParmas.MinGasMultiplier.IsNil() {
 		// in case we are executing eth_call on a legacy block, returns a zero value.
-		return sdk.ZeroDec()
+		return math.LegacyZeroDec()
 	}
 	return fmkParmas.MinGasMultiplier
 }

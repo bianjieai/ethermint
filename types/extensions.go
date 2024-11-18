@@ -86,7 +86,6 @@ func ParseChainID(chainID string) (*big.Int, error) {
 	return chainIDInt, nil
 }
 
-
 // NewMsgCreateValidator creates a new MsgCreateValidator instance.
 //
 // Parameters:

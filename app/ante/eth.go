@@ -96,7 +96,7 @@ func (avd EthAccountVerificationDecorator) AnteHandle(
 					feePayerAddr, feePayerAcct.CodeHash)
 			}
 
-			if err := keeper.CheckSenderBalance(sdk.NewIntFromBigInt(feePayerAcct.Balance), txData); err != nil {
+			if err := keeper.CheckSenderBalance(sdkmath.NewIntFromBigInt(feePayerAcct.Balance), txData); err != nil {
 				return ctx, errorsmod.Wrap(err, "failed to check feePayer balance")
 			}
 		} else {
@@ -332,7 +332,7 @@ func (ctd CanTransferDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 			BaseFee:     baseFee,
 		}
 
-		stateDB := statedb.New(ctx, ctd.evmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(ctx.HeaderHash().Bytes())))
+		stateDB := statedb.New(ctx, ctd.evmKeeper, statedb.NewEmptyTxConfig(common.BytesToHash(ctx.HeaderHash())))
 		evm := ctd.evmKeeper.NewEVM(ctx, coreMsg, cfg, evmtypes.NewNoOpTracer(), stateDB)
 
 		// check that caller has enough balance to cover asset transfer for **topmost** call
