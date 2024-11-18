@@ -2,10 +2,6 @@ module github.com/evmos/ethermint
 
 go 1.22.7
 
-toolchain go1.23.3
-
-// toolchain go1.22.2
-
 require (
 	github.com/cosmos/cosmos-sdk v0.50.10
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
