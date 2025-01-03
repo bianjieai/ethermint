@@ -16,6 +16,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
@@ -26,12 +27,13 @@ import (
 )
 
 // BeginBlock updates base fee
-func (k *Keeper) BeginBlock(ctx sdk.Context) {
+func (k *Keeper) BeginBlock(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	baseFee := k.CalculateBaseFee(ctx)
 
 	// return immediately if base fee is nil
 	if baseFee == nil {
-		return
+		return nil
 	}
 
 	k.SetBaseFee(ctx, baseFee)
@@ -47,15 +49,17 @@ func (k *Keeper) BeginBlock(ctx sdk.Context) {
 			sdk.NewAttribute(types.AttributeKeyBaseFee, baseFee.String()),
 		),
 	})
+	return nil
 }
 
 // EndBlock update block gas wanted.
 // The EVM end block logic doesn't update the validator set, thus it returns
 // an empty slice.
-func (k *Keeper) EndBlock(ctx sdk.Context) {
+func (k *Keeper) EndBlock(goCtx context.Context) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	if ctx.BlockGasMeter() == nil {
 		k.Logger(ctx).Error("block gas meter is nil when setting block gas wanted")
-		return
+		return nil
 	}
 
 	gasWanted := k.GetTransientGasWanted(ctx)
@@ -79,4 +83,5 @@ func (k *Keeper) EndBlock(ctx sdk.Context) {
 		sdk.NewAttribute("height", fmt.Sprintf("%d", ctx.BlockHeight())),
 		sdk.NewAttribute("amount", fmt.Sprintf("%d", gasWanted)),
 	))
+	return nil
 }

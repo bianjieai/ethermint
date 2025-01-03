@@ -16,6 +16,7 @@
 package keeper
 
 import (
+	"errors"
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
@@ -138,17 +139,18 @@ func (k *Keeper) WithOptions(opts types.Options) *Keeper {
 }
 
 // WithChainID sets the chain id to the local variable in the keeper
-func (k *Keeper) WithChainID(ctx sdk.Context) {
+func (k *Keeper) WithChainID(ctx sdk.Context) error {
 	chainID, err := ethermint.ParseChainID(ctx.ChainID())
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if k.eip155ChainID != nil && k.eip155ChainID.Cmp(chainID) != 0 {
-		panic("chain id already set")
+		return errors.New("chain id already set")
 	}
 
 	k.eip155ChainID = chainID
+	return nil
 }
 
 // ChainID returns the EIP155 chain ID for the EVM context

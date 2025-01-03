@@ -20,12 +20,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -39,8 +39,10 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule          = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.HasEndBlocker   = AppModule{}
+	_ module.AppModuleBasic     = AppModuleBasic{}
 )
 
 // AppModuleBasic defines the basic application module used by the fee market module.
@@ -81,11 +83,7 @@ func (AppModuleBasic) ValidateGenesis(
 	return genesisState.Validate()
 }
 
-// RegisterRESTRoutes performs a no-op as the EVM module doesn't expose REST
-// endpoints
-func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
-}
-
+// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the fee market module.
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(c)); err != nil {
 		panic(err)
@@ -156,19 +154,15 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	}
 }
 
-// QuerierRoute returns the fee market module's querier route name.
-func (AppModule) QuerierRoute() string { return types.RouterKey }
-
 // BeginBlock returns the begin block for the fee market module.
-func (am AppModule) BeginBlock(ctx sdk.Context) {
-	am.keeper.BeginBlock(ctx)
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return am.keeper.BeginBlock(ctx)
 }
 
 // EndBlock returns the end blocker for the fee market module. It returns no validator
 // updates.
-func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
-	am.keeper.EndBlock(ctx)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) error {
+	return am.keeper.EndBlock(ctx)
 }
 
 // InitGenesis performs genesis initialization for the fee market module. It returns
@@ -192,12 +186,8 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-// RegisterStoreDecoder registers a decoder for fee market module's types
-func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
-
-// ProposalContents doesn't return any content functions for governance proposals.
-func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
-	return nil
+// RegisterStoreDecoder registers a decoder for fee module's types
+func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {
 }
 
 // GenerateGenesisState creates a randomized GenState of the fee market module.
