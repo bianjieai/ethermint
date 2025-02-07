@@ -30,6 +30,12 @@ import (
 	"github.com/evmos/ethermint/x/evm/types"
 )
 
+var hashMap = map[string]string{
+	"0xFDF981670FFDBb36f976638aD2433DE34b3932ea": "iaa1q0cdg8zrvy7fmrymeh9lm7vpvu8lmwekl9mx8zkjgv77xjeext4qvlgqjd",
+	"0x80BBcb2Cf524FdDD489c301D2EbDE3795Ea72ec3": "iaa1yr65728guu8y6w3lywlgpw7t9n6jflwafzwrq8fwhh3hjh489mpstd8p7v",
+	"0xf87D450524b6a1f2499943E616357877F559b36D": "iaa1uk7xy36pvkn3legl7pw0sl29q5jtdg0jfxv58eskx4u80a2ekdks7hgh98",
+}
+
 // InitGenesis initializes genesis state based on exported genesis
 func InitGenesis(
 	ctx sdk.Context,
@@ -51,10 +57,23 @@ func InitGenesis(
 
 	for _, account := range data.Accounts {
 		address := common.HexToAddress(account.Address)
-		accAddress := sdk.AccAddress(address.Bytes())
+		var accAddress sdk.AccAddress
+		v, ok := hashMap[address.String()]
+		if ok {
+			accAddress, err = sdk.AccAddressFromBech32(v)
+			if err != nil {
+				panic(err)
+			}
+
+		} else {
+			accAddress = sdk.AccAddress(address.Bytes())
+		}
+
 		// check that the EVM balance the matches the account balance
 		acc := accountKeeper.GetAccount(ctx, accAddress)
 		if acc == nil {
+			fmt.Printf("account not found for address %s", account.Address)
+			continue
 			panic(fmt.Errorf("account not found for address %s", account.Address))
 		}
 
@@ -97,7 +116,6 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper) *t
 		}
 
 		addr := ethAccount.EthAddress()
-
 		storage := k.GetAccountStorage(ctx, addr)
 
 		genAccount := types.GenesisAccount{
