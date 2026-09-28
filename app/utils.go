@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"cosmossdk.io/simapp"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -63,7 +62,7 @@ var DefaultConsensusParams = &types1.ConsensusParams{
 // Setup initializes a new EthermintApp. A Nop logger is set in EthermintApp.
 func Setup(
 	isCheckTx bool,
-	patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState,
+	patchGenesis func(*EthermintApp, GenesisState) GenesisState,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *EthermintApp {
 	return SetupWithDB(isCheckTx, patchGenesis, dbm.NewMemDB(), baseAppOptions...)
@@ -72,7 +71,7 @@ func Setup(
 // SetupWithDB initializes a new EthermintApp. A Nop logger is set in EthermintApp.
 func SetupWithDB(
 	isCheckTx bool,
-	patchGenesis func(*EthermintApp, simapp.GenesisState) simapp.GenesisState,
+	patchGenesis func(*EthermintApp, GenesisState) GenesisState,
 	db dbm.DB,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *EthermintApp {
@@ -120,7 +119,7 @@ func SetupWithDB(
 }
 
 // NewTestGenesisState generate genesis state with single validator
-func NewTestGenesisState(app *EthermintApp) simapp.GenesisState {
+func NewTestGenesisState(app *EthermintApp) GenesisState {
 	privVal := mock.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	if err != nil {
@@ -142,10 +141,10 @@ func NewTestGenesisState(app *EthermintApp) simapp.GenesisState {
 	return genesisStateWithValSet(app.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
 }
 
-func genesisStateWithValSet(codec codec.Codec, genesisState simapp.GenesisState,
+func genesisStateWithValSet(codec codec.Codec, genesisState GenesisState,
 	valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount,
 	balances ...banktypes.Balance,
-) simapp.GenesisState {
+) GenesisState {
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = codec.MustMarshalJSON(authGenesis)

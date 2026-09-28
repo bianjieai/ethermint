@@ -20,7 +20,6 @@ import (
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"cosmossdk.io/simapp"
 	storetypes "cosmossdk.io/store/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,8 +30,11 @@ import (
 	"github.com/evmos/ethermint/encoding"
 )
 
+// GenesisState contains the genesis JSON for each application module.
+type GenesisState = map[string]json.RawMessage
+
 // NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState() simapp.GenesisState {
+func NewDefaultGenesisState() GenesisState {
 	encCfg := encoding.MakeConfig()
 	return ModuleBasics.DefaultGenesis(encCfg.Codec)
 }

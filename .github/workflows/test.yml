@@ -18,11 +18,11 @@ jobs:
   test-unit-cover:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version-file: go.mod
           check-latest: true
-      - uses: actions/checkout@v3
       - uses: technote-space/get-diff-action@v6.1.2
         with:
           PATTERNS: |
@@ -45,11 +45,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version-file: go.mod
           check-latest: true
-      - uses: actions/checkout@v3
       - uses: technote-space/get-diff-action@v6.1.2
         id: git_diff
         with:
@@ -66,11 +66,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version-file: go.mod
           check-latest: true
-      - uses: actions/checkout@v3
       - uses: technote-space/get-diff-action@v6.1.2
         with:
           PATTERNS: |

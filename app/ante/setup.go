@@ -91,6 +91,27 @@ func (eeed EthEmitEventDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 	return next(ctx, tx, simulate)
 }
 
+// RejectUnprotectedTxBodyFieldsDecorator rejects SDK fields that are not signed
+// by Ethereum transactions or legacy EIP-712 transactions.
+type RejectUnprotectedTxBodyFieldsDecorator struct{}
+
+func (RejectUnprotectedTxBodyFieldsDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+	wrapperTx, ok := tx.(protoTxProvider)
+	if !ok {
+		return ctx, errorsmod.Wrapf(errortypes.ErrUnknownRequest, "invalid tx type %T, didn't implement interface protoTxProvider", tx)
+	}
+	protoTx := wrapperTx.GetProtoTx()
+	if protoTx == nil || protoTx.Body == nil {
+		return ctx, errorsmod.Wrap(errortypes.ErrInvalidRequest, "missing tx body")
+	}
+	// Check presence, including an explicitly encoded zero timestamp. These
+	// fields must also be rejected during simulation and mempool rechecks.
+	if protoTx.Body.Unordered || protoTx.Body.TimeoutTimestamp != nil {
+		return ctx, errorsmod.Wrap(errortypes.ErrInvalidRequest, "Unordered and TimeoutTimestamp are not supported by this signing format")
+	}
+	return next(ctx, tx, simulate)
+}
+
 // EthValidateBasicDecorator is adapted from ValidateBasicDecorator from cosmos-sdk, it ignores ErrNoSignatures
 type EthValidateBasicDecorator struct {
 	evmKeeper EVMKeeper

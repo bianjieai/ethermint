@@ -163,6 +163,8 @@ func (suite AnteTestSuite) TestEthNonceVerificationDecorator() {
 }
 
 func (suite AnteTestSuite) TestEthGasConsumeDecorator() {
+	// Fix the fee for these decorator cases independently of setup blocks.
+	suite.app.FeeMarketKeeper.SetBaseFee(suite.ctx, big.NewInt(1000000000))
 	dec := ante.NewEthGasConsumeDecorator(suite.app.EvmKeeper, config.DefaultMaxTxGasWanted)
 
 	addr := utiltx.GenerateAddress()

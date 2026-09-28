@@ -18,6 +18,7 @@ package types
 import (
 	context "context"
 	"math/big"
+	"time"
 
 	"cosmossdk.io/core/address"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -42,6 +43,9 @@ type AccountKeeper interface {
 	GetParams(ctx context.Context) (params authtypes.Params)
 	GetSequence(context.Context, sdk.AccAddress) (uint64, error)
 	AddressCodec() address.Codec
+	UnorderedTransactionsEnabled() bool
+	RemoveExpiredUnorderedNonces(ctx sdk.Context) error
+	TryAddUnorderedNonce(ctx sdk.Context, sender []byte, timestamp time.Time) error
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.

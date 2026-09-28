@@ -154,9 +154,8 @@ func decodeProtobufSignDoc(signDocBytes []byte) (apitypes.TypedData, error) {
 		return apitypes.TypedData{}, err
 	}
 
-	// Until support for these fields is added, throw an error at their presence
-	if body.TimeoutHeight != 0 || len(body.ExtensionOptions) != 0 || len(body.NonCriticalExtensionOptions) != 0 {
-		return apitypes.TypedData{}, errors.New("body contains unsupported fields: TimeoutHeight, ExtensionOptions, or NonCriticalExtensionOptions")
+	if err := validateProtobufTxBody(body); err != nil {
+		return apitypes.TypedData{}, err
 	}
 
 	if len(authInfo.SignerInfos) != 1 {
@@ -209,6 +208,17 @@ func decodeProtobufSignDoc(signDocBytes []byte) (apitypes.TypedData, error) {
 	}
 
 	return typedData, nil
+}
+
+// validateProtobufTxBody rejects fields that cannot be represented by the
+// current or legacy EIP-712 format. In particular, conversion to StdSignBytes
+// would silently discard the SDK 0.53 unordered and timestamp fields.
+func validateProtobufTxBody(body *txTypes.TxBody) error {
+	if body.TimeoutHeight != 0 || body.Unordered || body.TimeoutTimestamp != nil ||
+		len(body.ExtensionOptions) != 0 || len(body.NonCriticalExtensionOptions) != 0 {
+		return errors.New("body contains unsupported fields: TimeoutHeight, Unordered, TimeoutTimestamp, ExtensionOptions, or NonCriticalExtensionOptions")
+	}
+	return nil
 }
 
 // validateCodecInit ensures that both Amino and Protobuf encoding codecs have been set on app init,
